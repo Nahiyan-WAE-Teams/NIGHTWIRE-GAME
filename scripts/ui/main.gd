@@ -92,7 +92,11 @@ func _add_brand_header(parent: VBoxContainer) -> void:
 	status.add_theme_stylebox_override("panel", _panel_style(Color("#1B1114"), Color("#54252B"), 14))
 	var status_row: HBoxContainer = HBoxContainer.new()
 	status_row.add_theme_constant_override("separation", 6)
-	status_row.add_child(_label("●", 11, ACCENT_RED, true))
+	var signal_dot: Label = _label("●", 11, ACCENT_RED, true)
+	status_row.add_child(signal_dot)
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(signal_dot, "modulate:a", 0.35, 0.9).set_trans(Tween.TRANS_SINE)
+	pulse.tween_property(signal_dot, "modulate:a", 1.0, 0.9).set_trans(Tween.TRANS_SINE)
 	status_row.add_child(_label("OFFLINE", 11, Color("#F08A84"), true))
 	status.add_child(status_row)
 	header.add_child(status)
@@ -129,6 +133,7 @@ func _nav_button(caption: String, screen_id: String) -> Button:
 	else:
 		button.pressed.connect(_navigate.bind(screen_id))
 	button.pressed.connect(_pulse_haptic)
+	button.pressed.connect(_animate_press.bind(button))
 	nav_buttons[screen_id] = button
 	return button
 
@@ -243,6 +248,14 @@ func _animate_page() -> void:
 	page.modulate.a = 0.0
 	var tween: Tween = create_tween()
 	tween.tween_property(page, "modulate:a", 1.0, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+func _animate_press(control: Control) -> void:
+	if not is_instance_valid(control):
+		return
+	control.pivot_offset = control.size * 0.5
+	var tween: Tween = create_tween()
+	tween.tween_property(control, "scale", Vector2(0.965, 0.965), 0.07).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(control, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _animate_in(control: Control, delay: float = 0.0) -> void:
 	control.modulate.a = 0.0
