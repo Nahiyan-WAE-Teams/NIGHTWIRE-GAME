@@ -54,6 +54,17 @@ func _run_checks() -> void:
 	_expect(CallManager.muted, "call manager stores mute state")
 	CallManager.end_call()
 	_expect(not CallManager.active, "call manager ends the simulated call cleanly")
+	var ui_root: Control = Control.new()
+	ui_root.set_script(load("res://scripts/ui/main.gd"))
+	add_child(ui_root)
+	await get_tree().process_frame
+	var nav_node: Node = ui_root.find_child("NavigationButtons", true, false)
+	_expect(nav_node is HBoxContainer and nav_node.get_child_count() == 4, "premium mobile dock keeps four primary navigation destinations")
+	var search_node: Node = ui_root.find_child("InboxSearch", true, false)
+	_expect(search_node is LineEdit, "inbox exposes an interactive contact search field")
+	ui_root.call("_on_more_menu_selected", 0)
+	_expect(str(ui_root.get("active_screen")) == "map", "More navigation opens secondary screens without crowding the dock")
+	ui_root.queue_free()
 	if failures == 0:
 		print("NIGHTWIRE RUNTIME TESTS: all checks passed.")
 		get_tree().quit(0)
