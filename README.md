@@ -71,3 +71,10 @@ NIGHTWIRE/
 ## Save security note
 
 Save data is encrypted at rest with Godot's encrypted FileAccess API. The password in the current source is a development key, not a secure per-install secret. Replace it with a release-specific key strategy before shipping a public build.
+
+
+## Android device testing build
+
+An ARM64 Android debug export preset is included in `export_presets.cfg`. Pushing to `build/**` triggers `.github/workflows/android-apk.yml`, which installs Godot 4.4.1 export templates, Java 17 and the Android SDK, creates an ephemeral debug signing key, exports `NIGHTWIRE-debug.apk`, and uploads it as the `NIGHTWIRE-Android-debug` workflow artifact for 14 days.
+
+The debug signing key is generated only inside the CI runner and is not committed. This APK is for sideloaded device testing, not Play Store release. To install it, download the APK artifact from the successful Android workflow run, open it on the Android device, and allow installation from the browser/files app when Android prompts.
