@@ -334,27 +334,30 @@ func _inspect_private_chat() -> void:
 	dialog.popup_centered(Vector2i(560, 360))
 
 func _render_evidence() -> void:
-	page.add_child(_label("EVIDENCE", 25, TEXT_MAIN, true))
-	page.add_child(_label("THE DETAILS THAT REFUSE TO STAY BURIED.", 12, TEXT_MUTED))
+	page.add_child(_label("EVIDENCE WALL", 25, TEXT_MAIN, true))
+	page.add_child(_label("EVERY CLUE IS A THREAD. PULL THE RIGHT ONE.", 12, TEXT_MUTED))
 	var records: Array[Dictionary] = EvidenceManager.get_unlocked()
 	if records.is_empty():
-		page.add_child(_empty_panel("No evidence collected yet.\nEpisode choices can unlock photos, files, recordings and clues here."))
+		page.add_child(_empty_panel("No evidence collected yet.\\nEpisode choices can unlock photos, files, recordings and clues here."))
 		return
 	var scroll: ScrollContainer = ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	page.add_child(scroll)
-	var list: VBoxContainer = VBoxContainer.new()
-	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	list.add_theme_constant_override("separation", 12)
-	scroll.add_child(list)
-	for record: Dictionary in records:
-		var card: PanelContainer = PanelContainer.new()
-		card.add_theme_stylebox_override("panel", _panel_style(SURFACE, BORDER, 18))
-		var content: VBoxContainer = VBoxContainer.new()
-		content.add_child(_label(str(record.get("title", "Evidence")), 18, TEXT_MAIN, true))
-		content.add_child(_label(str(record.get("description", "")), 14, TEXT_MUTED))
-		card.add_child(content)
-		list.add_child(card)
+	var board: Control = load("res://scripts/ui/evidence_board.gd").new()
+	board.records = records
+	board.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(board)
+	board.evidence_selected.connect(_show_evidence_detail)
+	board.queue_redraw()
+
+func _show_evidence_detail(record: Dictionary) -> void:
+	var dialog: AcceptDialog = AcceptDialog.new()
+	dialog.title = str(record.get("title", "EVIDENCE")).to_upper()
+	dialog.dialog_text = str(record.get("description", "No details attached."))
+	add_child(dialog)
+	dialog.confirmed.connect(dialog.queue_free)
+	dialog.popup_centered(Vector2i(560, 320))
 
 func _render_people() -> void:
 	page.add_child(_label("THE CONTACTS", 25, TEXT_MAIN, true))
@@ -498,6 +501,14 @@ func _render_hack() -> void:
 	password_box.add_child(_action_button("DECRYPT", func(): _submit_password(password_input.text)))
 	password_panel.add_child(password_box)
 	page.add_child(password_panel)
+
+	var reconstruction: VBoxContainer = load("res://scripts/ui/image_reconstruction.gd").new()
+	reconstruction.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	reconstruction.order_verified.connect(_on_image_reconstruction_solved)
+	page.add_child(reconstruction)
+
+func _on_image_reconstruction_solved() -> void:
+	PuzzleManager.complete_puzzle("image_reconstruction_solved")
 
 func _pattern_strings() -> PackedStringArray:
 	var values: PackedStringArray = PackedStringArray()
