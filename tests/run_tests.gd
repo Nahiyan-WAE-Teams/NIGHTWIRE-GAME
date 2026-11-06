@@ -1,6 +1,7 @@
 extends SceneTree
 
 const ContentValidator = preload("res://scripts/core/content_validator.gd")
+const MainUI = preload("res://scripts/ui/main.gd")
 
 var failures: int = 0
 
@@ -16,6 +17,10 @@ func _run() -> void:
 	var roster: Variant = JSON.parse_string(roster_file.get_as_text())
 	roster_file.close()
 	_expect(ContentValidator.validate_roster(roster).is_empty(), "the character roster contains exactly twenty unique valid profiles")
+	var ui: Control = MainUI.new()
+	_expect(ui._scaled_font_size(16) == 19, "messenger body typography scales up for phone readability")
+	_expect(ui._scaled_font_size(10) >= 12, "small labels keep a readable minimum font size")
+	ui.free()
 
 	var valid_episode: Dictionary = {
 		"id": "test_episode",
