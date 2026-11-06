@@ -25,13 +25,13 @@ func _draw() -> void:
 		draw_line(Vector2(0, y), Vector2(size.x, y), Color(0.45, 0.52, 0.43, 0.035), 1.0)
 	var center: Vector2 = size * 0.5
 	var radius: float = minf(size.x * 0.25, 92.0)
-	draw_circle(center, radius + 18.0 + pulse * 8.0, Color(0.0, 0.9, 1.0, 0.035))
+	draw_circle(center, radius + 13.0, Color("#202620"))
 	draw_arc(center, radius + 10.0, 0.0, TAU, 64, Color("#899782"), 2.0, true)
 	draw_circle(center, radius, Color("#1D211E"))
 	draw_circle(center, radius - 4.0, Color("#272C27"))
-	draw_string(ThemeDB.fallback_font, center + Vector2(-27, 10), "NW", HORIZONTAL_ALIGNMENT_LEFT, -1, 36, Color("#00E5FF"))
+	draw_string(ThemeDB.fallback_font, center + Vector2(-27, 10), "NW", HORIZONTAL_ALIGNMENT_LEFT, -1, 36, Color("#C5C9BD"))
 	for bar_index: int in range(25):
-		var height: float = 8.0 + absf(sin(float(bar_index) * 0.8 + float(frame_index) * 0.16)) * 30.0
+		var height: float = 8.0 + absf(sin(float(bar_index) * 0.8 + float(frame_index) * 0.09)) * 23.0
 		var x: float = size.x * 0.18 + float(bar_index) * size.x * 0.026
 		draw_rect(Rect2(Vector2(x, size.y - 62.0 - height * 0.5), Vector2(5, height)), Color(0.55, 0.62, 0.52, 0.78), true)
 	if frame_index % 17 == 0:
