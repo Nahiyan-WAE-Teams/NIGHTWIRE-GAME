@@ -688,7 +688,7 @@ func _render_hack() -> void:
 	password_box.add_child(_label("DECODE: HTGIN", 13, TEXT_MUTED, true))
 	var password_input: LineEdit = LineEdit.new()
 	password_input.placeholder_text = "Enter decrypted word"
-	password_input.add_theme_font_size_override("font_size", 17)
+	password_input.add_theme_font_size_override("font_size", _scaled_font_size(17))
 	password_input.add_theme_color_override("font_color", TEXT_MAIN)
 	password_input.add_theme_stylebox_override("normal", _panel_style(SURFACE_RAISED, BORDER, 14))
 	password_input.text_submitted.connect(_submit_password)
