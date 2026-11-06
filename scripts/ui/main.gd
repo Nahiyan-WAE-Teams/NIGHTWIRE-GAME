@@ -22,6 +22,7 @@ func _ready() -> void:
 	_render_screen()
 	ChatManager.conversations_changed.connect(_on_conversations_changed)
 	EvidenceManager.evidence_changed.connect(_on_evidence_changed)
+	StoryManager.story_node_changed.connect(_on_story_node_changed)
 
 func _build_shell() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -71,6 +72,7 @@ func _build_navigation() -> HBoxContainer:
 	nav.add_child(_nav_button("CHATS", "inbox"))
 	nav.add_child(_nav_button("EVIDENCE", "evidence"))
 	nav.add_child(_nav_button("PEOPLE", "people"))
+	nav.add_child(_nav_button("STORY", "story"))
 	nav.add_child(_nav_button("SETTINGS", "settings"))
 	return nav
 
@@ -100,6 +102,8 @@ func _render_screen() -> void:
 			_render_evidence()
 		"people":
 			_render_people()
+		"story":
+			_render_story()
 		"settings":
 			_render_settings()
 		_:
@@ -318,6 +322,80 @@ func _render_people() -> void:
 		row.add_child(_label(str(profile.get("status", "inactive")).to_upper(), 11, ACCENT_CYAN))
 		card.add_child(row)
 		list.add_child(card)
+
+
+func _render_story() -> void:
+	page.add_child(_label("STORY FILES", 25, TEXT_MAIN, true))
+	page.add_child(_label("EPISODES ARE LOADED FROM JSON. NO STORY IS HARD-CODED.", 11, TEXT_MUTED))
+	var current_node: Dictionary = StoryManager.get_current_node()
+	if not current_node.is_empty():
+		var current_panel: PanelContainer = PanelContainer.new()
+		current_panel.add_theme_stylebox_override("panel", _panel_style(SURFACE_RAISED, ACCENT_CYAN, 18))
+		var current_content: VBoxContainer = VBoxContainer.new()
+		current_content.add_child(_label("NOW PLAYING  /  " + StoryManager.active_episode_id.to_upper(), 12, ACCENT_CYAN, true))
+		current_content.add_child(_label(str(current_node.get("speaker", "SYSTEM")).to_upper(), 13, TEXT_MUTED, true))
+		var story_text: Label = _label(str(current_node.get("text", "")), 17, TEXT_MAIN)
+		story_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		current_content.add_child(story_text)
+		var choices: Variant = current_node.get("choices", [])
+		if choices is Array and not choices.is_empty():
+			for choice_index: int in range(choices.size()):
+				var choice: Dictionary = choices[choice_index]
+				var choice_button: Button = Button.new()
+				choice_button.text = str(choice.get("text", "Continue"))
+				choice_button.custom_minimum_size.y = 56
+				choice_button.add_theme_color_override("font_color", ACCENT_CYAN)
+				choice_button.add_theme_stylebox_override("normal", _panel_style(SURFACE, BORDER, 14))
+				choice_button.add_theme_stylebox_override("hover", _panel_style(Color("#20202A"), ACCENT_CYAN, 14))
+				choice_button.pressed.connect(_choose_story_choice.bind(choice_index))
+				current_content.add_child(choice_button)
+		else:
+			current_content.add_child(_label("END OF THIS STORY PATH", 12, ACCENT_RED, true))
+		current_panel.add_child(current_content)
+		page.add_child(current_panel)
+	else:
+		page.add_child(_empty_panel("No active episode. Add an episode JSON file to data/episodes/ and it will appear below."))
+	var episodes: Array[Dictionary] = ContentManager.get_episodes()
+	if episodes.is_empty():
+		page.add_child(_empty_panel("No episode files have been added yet. The complete story engine is ready for your own episode files."))
+		return
+	var scroll: ScrollContainer = ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	page.add_child(scroll)
+	var list: VBoxContainer = VBoxContainer.new()
+	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	list.add_theme_constant_override("separation", 10)
+	scroll.add_child(list)
+	for episode: Dictionary in episodes:
+		var card: PanelContainer = PanelContainer.new()
+		card.add_theme_stylebox_override("panel", _panel_style(SURFACE, BORDER, 16))
+		var layout: HBoxContainer = HBoxContainer.new()
+		var details: VBoxContainer = VBoxContainer.new()
+		details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		details.add_child(_label(str(episode.get("title", "Untitled episode")), 17, TEXT_MAIN, true))
+		details.add_child(_label(str(episode.get("description", "")), 12, TEXT_MUTED))
+		layout.add_child(details)
+		var launch: Button = Button.new()
+		launch.text = "OPEN"
+		launch.custom_minimum_size = Vector2(86, 48)
+		launch.add_theme_color_override("font_color", ACCENT_CYAN)
+		launch.add_theme_stylebox_override("normal", _panel_style(SURFACE_RAISED, BORDER, 12))
+		launch.pressed.connect(_start_episode.bind(str(episode.get("id", ""))))
+		layout.add_child(launch)
+		card.add_child(layout)
+		list.add_child(card)
+
+func _start_episode(episode_id: String) -> void:
+	if StoryManager.start_episode(episode_id):
+		_render_screen()
+
+func _choose_story_choice(choice_index: int) -> void:
+	if StoryManager.choose(choice_index):
+		_render_screen()
+
+func _on_story_node_changed(_episode_id: String, _node_id: String, _node: Dictionary) -> void:
+	if active_screen == "story":
+		_render_screen()
 
 func _render_settings() -> void:
 	page.add_child(_label("SYSTEM", 25, TEXT_MAIN, true))

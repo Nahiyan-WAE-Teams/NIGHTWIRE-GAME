@@ -27,3 +27,6 @@ jobs:
 
       - name: Run content-system tests
         run: godot --headless --path . --script res://tests/run_tests.gd
+
+      - name: Launch main scene headlessly
+        run: godot --headless --path . --quit-after 3

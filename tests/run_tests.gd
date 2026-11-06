@@ -50,6 +50,9 @@ func _run() -> void:
 
 	var broken_roster: Dictionary = {"characters": [{"id": "same"}, {"id": "same"}]}
 	_expect(not ContentValidator.validate_roster(broken_roster).is_empty(), "a malformed roster is rejected")
+	_expect(ContentManager.get_characters().size() == 20, "the content autoload loads all twenty character slots")
+	_expect(ChatManager.get_conversations().size() == 20, "the chat manager creates an inbox channel for every character")
+	_expect(ContentManager.get_episodes().is_empty(), "the framework starts cleanly without any authored episode files")
 
 	_finish()
 
