@@ -111,6 +111,7 @@ func _build_pins() -> void:
 		button.text = "＋"
 		button.tooltip_text = str(location.get("name", "Location"))
 		button.custom_minimum_size = Vector2(44, 44)
+		button.size = button.custom_minimum_size
 		button.add_theme_color_override("font_color", Color("#FFFFFF"))
 		var style: StyleBoxFlat = StyleBoxFlat.new()
 		style.bg_color = Color("#241416")
