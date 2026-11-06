@@ -23,13 +23,22 @@ jobs:
           use-dotnet: false
 
       - name: Import and parse project
-        run: godot --headless --editor --path . --quit
+        run: |
+          set -o pipefail
+          godot --headless --editor --path . --quit 2>&1 | tee /tmp/nightwire-import.log
+          if grep -E "SCRIPT ERROR|ERROR:" /tmp/nightwire-import.log; then exit 1; fi
 
       - name: Run content-system tests
         run: godot --headless --path . --script res://tests/run_tests.gd
 
       - name: Verify autoloaded game systems
-        run: godot --headless --path . res://tests/runtime_smoke.tscn
+        run: |
+          set -o pipefail
+          godot --headless --path . res://tests/runtime_smoke.tscn 2>&1 | tee /tmp/nightwire-runtime.log
+          if grep -E "SCRIPT ERROR|ERROR:" /tmp/nightwire-runtime.log; then exit 1; fi
 
       - name: Launch main scene headlessly
-        run: godot --headless --path . --quit-after 3
+        run: |
+          set -o pipefail
+          godot --headless --path . --quit-after 3 2>&1 | tee /tmp/nightwire-main.log
+          if grep -E "SCRIPT ERROR|ERROR:" /tmp/nightwire-main.log; then exit 1; fi

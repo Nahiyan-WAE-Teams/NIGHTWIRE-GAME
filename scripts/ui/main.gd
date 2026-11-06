@@ -16,6 +16,9 @@ var message_input: LineEdit
 var message_scroll: ScrollContainer
 var navigation: HBoxContainer
 var nav_buttons: Dictionary = {}
+var pattern_entry: Array[int] = []
+var pattern_feedback: String = "NO INPUT YET"
+var password_feedback: String = "AWAITING DECRYPTION"
 
 func _ready() -> void:
 	_build_shell()
