@@ -14,6 +14,7 @@ var active_screen: String = "inbox"
 var active_conversation_id: String = ""
 var message_input: LineEdit
 var message_scroll: ScrollContainer
+var call_mute_button: Button
 var navigation: HBoxContainer
 var nav_buttons: Dictionary = {}
 var pattern_entry: Array[int] = []
@@ -421,11 +422,8 @@ func _open_simulated_call() -> void:
 	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	layout.add_child(status)
 	var controls: HBoxContainer = HBoxContainer.new()
-	var mute_button: Button = _action_button("MUTE MIC", func() -> void:
-		CallManager.set_muted(not CallManager.muted)
-		mute_button.text = "UNMUTE MIC" if CallManager.muted else "MUTE MIC"
-	)
-	controls.add_child(mute_button)
+	call_mute_button = _action_button("MUTE MIC", _toggle_call_mute)
+	controls.add_child(call_mute_button)
 	var end_button: Button = _action_button("END CALL", func() -> void:
 		_end_call_window(window)
 	)
@@ -434,6 +432,11 @@ func _open_simulated_call() -> void:
 	layout.add_child(controls)
 	window.close_requested.connect(_end_call_window.bind(window))
 	window.popup_centered()
+
+func _toggle_call_mute() -> void:
+	CallManager.set_muted(not CallManager.muted)
+	if is_instance_valid(call_mute_button):
+		call_mute_button.text = "UNMUTE MIC" if CallManager.muted else "MUTE MIC"
 
 func _end_call_window(window: Window) -> void:
 	CallManager.end_call()
