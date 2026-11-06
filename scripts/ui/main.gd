@@ -824,6 +824,144 @@ func _panel_style(fill: Color, stroke: Color, radius: int) -> StyleBoxFlat:
 	style.content_margin_bottom = 9
 	return style
 
+func _open_simulated_call() -> void:
+	if not CallManager.begin_call(active_conversation_id):
+		return
+	var window: Window = Window.new()
+	window.title = "NIGHTWIRE  /  PRIVATE VOICE CALL"
+	window.size = Vector2i(440, 760)
+	window.min_size = Vector2i(360, 560)
+	window.transient = true
+	window.exclusive = true
+	add_child(window)
+	var layout: VBoxContainer = VBoxContainer.new()
+	layout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	layout.add_theme_constant_override("separation", 16)
+	window.add_child(layout)
+	var identity: VBoxContainer = VBoxContainer.new()
+	identity.add_child(_label("CONNECTED CHANNEL", 13, ACCENT_GREEN, true))
+	identity.add_child(_label(str(ChatManager.get_conversation(active_conversation_id).get("name", "UNKNOWN")), 27, TEXT_MAIN, true))
+	identity.add_child(_label("PRIVATE VOICE LINK  /  CAMERA DISABLED", 12, TEXT_MUTED))
+	layout.add_child(identity)
+	var visual: Control = load("res://scripts/ui/call_visual.gd").new()
+	visual.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	layout.add_child(visual)
+	var status: Label = _label("LOCAL CALL SIMULATION", 13, TEXT_MUTED, true)
+	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	layout.add_child(status)
+	var controls: HBoxContainer = HBoxContainer.new()
+	call_mute_button = _action_button("MUTE MIC", _toggle_call_mute)
+	controls.add_child(call_mute_button)
+	var end_button: Button = _action_button("END CALL", func() -> void:
+		_end_call_window(window)
+	)
+	end_button.add_theme_color_override("font_color", ACCENT_RED)
+	controls.add_child(end_button)
+	layout.add_child(controls)
+	window.close_requested.connect(_end_call_window.bind(window))
+	window.popup_centered()
+
+func _end_call_window(window: Window) -> void:
+	CallManager.end_call()
+	if is_instance_valid(window):
+		window.queue_free()
+
+func _toggle_call_mute() -> void:
+	CallManager.set_muted(not CallManager.muted)
+	if is_instance_valid(call_mute_button):
+		call_mute_button.text = "UNMUTE MIC" if CallManager.muted else "MUTE MIC"
+
+func _inspect_private_chat() -> void:
+	var result: Dictionary = SpyManager.inspect_private_messages(active_conversation_id)
+	var dialog: AcceptDialog = AcceptDialog.new()
+	if bool(result.get("caught", false)):
+		dialog.dialog_text = "ACCESS DETECTED\\nThe contact noticed the intrusion. Trust decreased."
+	else:
+		var messages: Variant = result.get("messages", [])
+		var lines: PackedStringArray = PackedStringArray()
+		if messages is Array:
+			for message: Variant in messages:
+				lines.append(str(message))
+		dialog.dialog_text = "PRIVATE CACHE\\n" + ("\\n".join(lines) if not lines.is_empty() else "No private messages are stored for this contact.")
+	add_child(dialog)
+	dialog.confirmed.connect(dialog.queue_free)
+	dialog.popup_centered(Vector2i(560, 360))
+
+func _open_image_viewer(media_path: String) -> void:
+	var texture: Texture2D = MediaManager.load_image(media_path)
+	if texture == null:
+		_show_media_error("Image unavailable", "The image file could not be loaded: " + media_path)
+		return
+	var window: Window = Window.new()
+	window.title = "NIGHTWIRE  /  IMAGE EVIDENCE"
+	window.size = Vector2i(440, 760)
+	window.min_size = Vector2i(360, 560)
+	window.transient = true
+	window.exclusive = true
+	add_child(window)
+	var layout: VBoxContainer = VBoxContainer.new()
+	layout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	layout.add_theme_constant_override("separation", 12)
+	window.add_child(layout)
+	var zoom_row: HBoxContainer = HBoxContainer.new()
+	zoom_row.add_child(_label("ZOOM", 13, TEXT_MUTED, true))
+	var zoom: HSlider = HSlider.new()
+	zoom.min_value = 0.5
+	zoom.max_value = 2.5
+	zoom.step = 0.1
+	zoom.value = 1.0
+	zoom.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	zoom_row.add_child(zoom)
+	layout.add_child(zoom_row)
+	var scroll: ScrollContainer = ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	layout.add_child(scroll)
+	var preview: TextureRect = TextureRect.new()
+	preview.texture = texture
+	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview.custom_minimum_size = Vector2(texture.get_width(), texture.get_height())
+	preview.size = preview.custom_minimum_size
+	scroll.add_child(preview)
+	zoom.value_changed.connect(func(value: float) -> void:
+		preview.custom_minimum_size = Vector2(texture.get_width(), texture.get_height()) * value
+		preview.size = preview.custom_minimum_size
+	)
+	window.close_requested.connect(window.queue_free)
+	window.popup_centered()
+
+func _open_document_viewer(media_path: String) -> void:
+	if not FileAccess.file_exists(media_path):
+		_show_media_error("File unavailable", "The document could not be found: " + media_path)
+		return
+	var file: FileAccess = FileAccess.open(media_path, FileAccess.READ)
+	if file == null:
+		_show_media_error("File unavailable", "The document could not be opened.")
+		return
+	var content_text: String = file.get_as_text()
+	file.close()
+	if content_text.length() > 50000:
+		content_text = content_text.substr(0, 50000) + "\\n\\n[Preview truncated at 50,000 characters]"
+	var dialog: AcceptDialog = AcceptDialog.new()
+	dialog.title = "NIGHTWIRE  /  DOCUMENT"
+	var preview: RichTextLabel = RichTextLabel.new()
+	preview.custom_minimum_size = Vector2(360, 520)
+	preview.bbcode_enabled = false
+	preview.text = content_text
+	preview.fit_content = false
+	dialog.add_child(preview)
+	add_child(dialog)
+	dialog.confirmed.connect(dialog.queue_free)
+	dialog.popup_centered(Vector2i(420, 700))
+
+func _show_media_error(title_text: String, detail: String) -> void:
+	var dialog: AcceptDialog = AcceptDialog.new()
+	dialog.title = title_text
+	dialog.dialog_text = detail
+	add_child(dialog)
+	dialog.confirmed.connect(dialog.queue_free)
+	dialog.popup_centered(Vector2i(560, 280))
+
 func _open_chat(conversation_id: String) -> void:
 	active_conversation_id = conversation_id
 	ChatManager.mark_read(conversation_id)
