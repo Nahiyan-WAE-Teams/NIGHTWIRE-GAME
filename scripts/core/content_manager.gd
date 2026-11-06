@@ -37,7 +37,8 @@ func get_episodes() -> Array[Dictionary]:
 func get_episode(episode_id: String) -> Dictionary:
 	if not episodes.has(episode_id):
 		return {}
-	return (episodes[episode_id] as Dictionary).duplicate(true)
+	var episode: Dictionary = episodes[episode_id]
+	return episode.duplicate(true)
 
 func reload_content() -> void:
 	characters.clear()
@@ -60,24 +61,31 @@ func _load_roster() -> void:
 			characters.append(entry.duplicate(true))
 
 func _load_episodes() -> void:
-	if not DirAccess.dir_exists_absolute(EPISODE_DIRECTORY):
+	var directory: DirAccess = DirAccess.open(EPISODE_DIRECTORY)
+	if directory == null:
+		push_warning("NIGHTWIRE episode directory could not be opened.")
 		return
-	var files: PackedStringArray = DirAccess.get_files_at(EPISODE_DIRECTORY)
-	files.sort()
-	for file_name: String in files:
-		if not file_name.ends_with(".json") or file_name.begins_with("_"):
-			continue
-		var path: String = EPISODE_DIRECTORY.path_join(file_name)
+	var file_names: PackedStringArray = PackedStringArray()
+	directory.list_dir_begin()
+	var file_name: String = directory.get_next()
+	while not file_name.is_empty():
+		if not directory.current_is_dir() and file_name.ends_with(".json") and not file_name.begins_with("_"):
+			file_names.append(file_name)
+		file_name = directory.get_next()
+	directory.list_dir_end()
+	file_names.sort()
+	for episode_file: String in file_names:
+		var path: String = EPISODE_DIRECTORY.path_join(episode_file)
 		var parsed: Variant = _read_json(path)
 		var errors: PackedStringArray = NightwireContentValidator.validate_episode(parsed)
 		if not errors.is_empty():
 			for error_message: String in errors:
-				push_error("NIGHTWIRE episode %s: %s" % [file_name, error_message])
-			content_error.emit("Episode file %s is invalid." % file_name)
+				push_error("NIGHTWIRE episode %s: %s" % [episode_file, error_message])
+			content_error.emit("Episode file %s is invalid." % episode_file)
 			continue
 		var episode_id: String = str(parsed.get("id", "")).strip_edges()
 		if episode_id.is_empty():
-			push_error("NIGHTWIRE episode %s has an empty id." % file_name)
+			push_error("NIGHTWIRE episode %s has an empty id." % episode_file)
 			continue
 		if episodes.has(episode_id):
 			push_error("NIGHTWIRE has duplicate episode id '%s'." % episode_id)

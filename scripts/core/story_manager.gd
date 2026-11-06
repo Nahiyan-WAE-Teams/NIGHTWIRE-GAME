@@ -102,7 +102,18 @@ func _requirements_met(choice: Dictionary) -> bool:
 func _emit_current_node() -> void:
 	if current_node_id.is_empty():
 		return
-	story_node_changed.emit(active_episode_id, current_node_id, get_current_node())
+	var node: Dictionary = get_current_node()
+	story_node_changed.emit(active_episode_id, current_node_id, node)
+	var choices: Variant = node.get("choices", [])
+	if choices is Array and choices.is_empty() and str(node.get("next_id", "")).is_empty():
+		story_completed.emit(active_episode_id)
+
+func reset_progress() -> void:
+	active_episode_id = ""
+	current_node_id = ""
+	trust.clear()
+	flags.clear()
+	_persist()
 
 func _persist() -> void:
 	SaveManager.set_value("trust", trust)

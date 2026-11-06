@@ -14,6 +14,8 @@ var active_screen: String = "inbox"
 var active_conversation_id: String = ""
 var message_input: LineEdit
 var message_scroll: ScrollContainer
+var navigation: HBoxContainer
+var nav_buttons: Dictionary = {}
 
 func _ready() -> void:
 	_build_shell()
@@ -47,7 +49,8 @@ func _build_shell() -> void:
 	page.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	page.add_theme_constant_override("separation", 18)
 	shell.add_child(page)
-	shell.add_child(_build_navigation())
+	navigation = _build_navigation()
+	shell.add_child(navigation)
 
 func _add_brand_header(parent: VBoxContainer) -> void:
 	var header: HBoxContainer = HBoxContainer.new()
@@ -62,7 +65,7 @@ func _add_brand_header(parent: VBoxContainer) -> void:
 	header.add_child(status)
 	parent.add_child(header)
 
-func _build_navigation() -> Control:
+func _build_navigation() -> HBoxContainer:
 	var nav: HBoxContainer = HBoxContainer.new()
 	nav.add_theme_constant_override("separation", 8)
 	nav.add_child(_nav_button("CHATS", "inbox"))
@@ -82,9 +85,11 @@ func _nav_button(caption: String, screen_id: String) -> Button:
 	button.add_theme_stylebox_override("hover", _panel_style(SURFACE_RAISED, ACCENT_CYAN, 14))
 	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	button.pressed.connect(_navigate.bind(screen_id))
+	nav_buttons[screen_id] = button
 	return button
 
 func _render_screen() -> void:
+	_update_navigation()
 	_clear_page()
 	match active_screen:
 		"inbox":
@@ -121,6 +126,13 @@ func _render_inbox() -> void:
 
 	for conversation: Dictionary in ChatManager.get_conversations():
 		list.add_child(_conversation_card(conversation))
+
+func _update_navigation() -> void:
+	for screen_id: Variant in nav_buttons.keys():
+		var button: Button = nav_buttons[screen_id]
+		var selected: bool = str(screen_id) == active_screen
+		button.add_theme_color_override("font_color", ACCENT_CYAN if selected else TEXT_MUTED)
+		button.add_theme_stylebox_override("normal", _panel_style(SURFACE_RAISED if selected else SURFACE, ACCENT_CYAN if selected else BORDER, 14))
 
 func _conversation_card(conversation: Dictionary) -> Control:
 	var conversation_id: String = str(conversation.get("id", ""))
@@ -169,7 +181,7 @@ func _conversation_card(conversation: Dictionary) -> Control:
 	preview.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	details.add_child(preview)
 	row.add_child(details)
-	button.add_child(_label("›", 28, ACCENT_CYAN))
+	row.add_child(_label("›", 28, ACCENT_CYAN))
 	return button
 
 func _render_chat() -> void:
@@ -399,6 +411,9 @@ func _confirm_reset() -> void:
 
 func _reset_local_data() -> void:
 	SaveManager.reset_all()
+	ChatManager.reset_conversations()
+	EvidenceManager.clear_evidence()
+	StoryManager.reset_progress()
 	get_tree().reload_current_scene()
 
 func _on_conversations_changed() -> void:

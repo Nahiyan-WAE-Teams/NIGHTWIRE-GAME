@@ -108,5 +108,9 @@ func _sync_roster() -> void:
 	)
 	conversations_changed.emit()
 
+func reset_conversations() -> void:
+	conversations.clear()
+	_sync_roster()
+
 func _persist() -> void:
 	SaveManager.set_value("conversations", conversations)

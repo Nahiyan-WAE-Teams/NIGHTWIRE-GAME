@@ -37,6 +37,11 @@ func get_unlocked() -> Array[Dictionary]:
 func get_unlocked_ids() -> Array[String]:
 	return unlocked_ids.duplicate()
 
+func clear_evidence() -> void:
+	unlocked_ids.clear()
+	SaveManager.set_value("evidence", [])
+	evidence_changed.emit()
+
 func _load_catalog() -> void:
 	if not FileAccess.file_exists(CATALOG_PATH):
 		return
