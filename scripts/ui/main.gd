@@ -17,6 +17,9 @@ var message_scroll: ScrollContainer
 var call_mute_button: Button
 var navigation: HBoxContainer
 var nav_buttons: Dictionary = {}
+var inbox_search: LineEdit
+var inbox_list: VBoxContainer
+var nav_popup: PopupMenu
 var pattern_entry: Array[int] = []
 var pattern_feedback: String = "NO INPUT YET"
 var password_feedback: String = "AWAITING DECRYPTION"
@@ -39,63 +42,117 @@ func _build_shell() -> void:
 
 	var safe_margin: MarginContainer = MarginContainer.new()
 	safe_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	safe_margin.add_theme_constant_override("margin_left", 32)
-	safe_margin.add_theme_constant_override("margin_right", 32)
-	safe_margin.add_theme_constant_override("margin_top", 48)
-	safe_margin.add_theme_constant_override("margin_bottom", 28)
+	safe_margin.add_theme_constant_override("margin_left", 22)
+	safe_margin.add_theme_constant_override("margin_right", 22)
+	safe_margin.add_theme_constant_override("margin_top", 26)
+	safe_margin.add_theme_constant_override("margin_bottom", 18)
 	add_child(safe_margin)
 
 	var shell: VBoxContainer = VBoxContainer.new()
-	shell.add_theme_constant_override("separation", 20)
+	shell.add_theme_constant_override("separation", 14)
 	safe_margin.add_child(shell)
 	_add_brand_header(shell)
 
 	page = VBoxContainer.new()
+	page.name = "ScreenContent"
 	page.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	page.add_theme_constant_override("separation", 18)
+	page.add_theme_constant_override("separation", 14)
 	shell.add_child(page)
+	var dock: PanelContainer = PanelContainer.new()
+	dock.name = "NavigationDock"
+	dock.add_theme_stylebox_override("panel", _panel_style(Color("#101015"), Color("#30303B"), 22))
+	var dock_margin: MarginContainer = MarginContainer.new()
+	dock_margin.add_theme_constant_override("margin_left", 7)
+	dock_margin.add_theme_constant_override("margin_right", 7)
+	dock_margin.add_theme_constant_override("margin_top", 7)
+	dock_margin.add_theme_constant_override("margin_bottom", 7)
+	dock.add_child(dock_margin)
 	navigation = _build_navigation()
-	shell.add_child(navigation)
+	dock_margin.add_child(navigation)
+	shell.add_child(dock)
 
 func _add_brand_header(parent: VBoxContainer) -> void:
 	var header: HBoxContainer = HBoxContainer.new()
+	header.add_theme_constant_override("separation", 12)
+	var mark: PanelContainer = PanelContainer.new()
+	mark.custom_minimum_size = Vector2(48, 48)
+	mark.add_theme_stylebox_override("panel", _panel_style(Color("#171B21"), Color("#00AFC4"), 15))
+	var mark_label: Label = _label("N", 25, ACCENT_CYAN, true)
+	mark_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	mark_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	mark.add_child(mark_label)
+	header.add_child(mark)
 	var brand: VBoxContainer = VBoxContainer.new()
 	brand.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	brand.add_child(_label("NIGHTWIRE", 34, TEXT_MAIN, true))
-	brand.add_child(_label("SOMEONE IS ALWAYS LISTENING.", 12, TEXT_MUTED, true))
+	brand.add_theme_constant_override("separation", 1)
+	brand.add_child(_label("NIGHTWIRE", 29, TEXT_MAIN, true))
+	brand.add_child(_label("PRIVATE SIGNAL  /  CASE FILE 001", 10, TEXT_MUTED, true))
 	header.add_child(brand)
 	var status: PanelContainer = PanelContainer.new()
-	status.add_theme_stylebox_override("panel", _panel_style(Color("#171216"), Color("#4B2427"), 16))
-	status.add_child(_label("●  OFFLINE", 13, ACCENT_RED, true))
+	status.add_theme_stylebox_override("panel", _panel_style(Color("#1B1114"), Color("#54252B"), 14))
+	var status_row: HBoxContainer = HBoxContainer.new()
+	status_row.add_theme_constant_override("separation", 6)
+	status_row.add_child(_label("●", 11, ACCENT_RED, true))
+	status_row.add_child(_label("OFFLINE", 11, Color("#F08A84"), true))
+	status.add_child(status_row)
 	header.add_child(status)
 	parent.add_child(header)
+	var hairline: ColorRect = ColorRect.new()
+	hairline.color = Color("#25252E")
+	hairline.custom_minimum_size.y = 1
+	parent.add_child(hairline)
 
 func _build_navigation() -> HBoxContainer:
 	var nav: HBoxContainer = HBoxContainer.new()
-	nav.add_theme_constant_override("separation", 8)
+	nav.name = "NavigationButtons"
+	nav.add_theme_constant_override("separation", 6)
 	nav.add_child(_nav_button("CHATS", "inbox"))
-	nav.add_child(_nav_button("EVIDENCE", "evidence"))
+	nav.add_child(_nav_button("CLUES", "evidence"))
 	nav.add_child(_nav_button("PEOPLE", "people"))
-	nav.add_child(_nav_button("MAP", "map"))
-	nav.add_child(_nav_button("STORY", "story"))
-	nav.add_child(_nav_button("HACK", "hack"))
-	nav.add_child(_nav_button("SETTINGS", "settings"))
+	nav.add_child(_nav_button("MORE", "more"))
 	return nav
 
 func _nav_button(caption: String, screen_id: String) -> Button:
 	var button: Button = Button.new()
+	button.name = "Nav_" + screen_id.capitalize()
 	button.text = caption
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.custom_minimum_size.y = 58
-	button.add_theme_font_size_override("font_size", 13)
+	button.custom_minimum_size = Vector2(0, 52)
+	button.add_theme_font_size_override("font_size", 11)
 	button.add_theme_color_override("font_color", ACCENT_CYAN if active_screen == screen_id else TEXT_MUTED)
-	button.add_theme_stylebox_override("normal", _panel_style(SURFACE_RAISED if active_screen == screen_id else SURFACE, ACCENT_CYAN if active_screen == screen_id else BORDER, 14))
-	button.add_theme_stylebox_override("hover", _panel_style(SURFACE_RAISED, ACCENT_CYAN, 14))
+	button.add_theme_stylebox_override("normal", _panel_style(Color("#20232B") if active_screen == screen_id else Color("#101015"), Color("#24515A") if active_screen == screen_id else Color("#101015"), 15))
+	button.add_theme_stylebox_override("hover", _panel_style(Color("#20232B"), Color("#247B87"), 15))
+	button.add_theme_stylebox_override("pressed", _panel_style(Color("#26323A"), ACCENT_CYAN, 15))
 	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-	button.pressed.connect(_navigate.bind(screen_id))
+	if screen_id == "more":
+		button.pressed.connect(_open_more_menu)
+	else:
+		button.pressed.connect(_navigate.bind(screen_id))
 	button.pressed.connect(_pulse_haptic)
 	nav_buttons[screen_id] = button
 	return button
+
+func _open_more_menu() -> void:
+	if nav_popup == null:
+		nav_popup = PopupMenu.new()
+		nav_popup.add_item("CITY MAP", 0)
+		nav_popup.add_item("STORY FILES", 1)
+		nav_popup.add_item("SIGNAL LAB", 2)
+		nav_popup.add_item("SYSTEM SETTINGS", 3)
+		nav_popup.id_pressed.connect(_on_more_menu_selected)
+		add_child(nav_popup)
+	nav_popup.popup_centered(Vector2i(280, 250))
+
+func _on_more_menu_selected(item_id: int) -> void:
+	match item_id:
+		0:
+			_navigate("map")
+		1:
+			_navigate("story")
+		2:
+			_navigate("hack")
+		3:
+			_navigate("settings")
 
 func _render_screen() -> void:
 	_update_navigation()
@@ -120,40 +177,87 @@ func _render_screen() -> void:
 		_:
 			active_screen = "inbox"
 			_render_inbox()
+		_animate_page()
 
 func _render_inbox() -> void:
 	var heading: HBoxContainer = HBoxContainer.new()
-	var title: Label = _label("MESSAGES", 25, TEXT_MAIN, true)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	heading.add_child(title)
-	heading.add_child(_label("%02d CONTACTS" % ChatManager.get_conversations().size(), 13, ACCENT_CYAN, true))
+	var title_group: VBoxContainer = VBoxContainer.new()
+	title_group.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title_group.add_child(_label("YOUR CHANNELS", 24, TEXT_MAIN, true))
+	title_group.add_child(_label("THE PEOPLE ON THE OTHER SIDE.", 10, TEXT_MUTED, true))
+	heading.add_child(title_group)
+	var count: PanelContainer = PanelContainer.new()
+	count.add_theme_stylebox_override("panel", _panel_style(Color("#102027"), Color("#1D5963"), 13))
+	count.add_child(_label("%02d  ACTIVE" % ChatManager.get_conversations().size(), 11, ACCENT_CYAN, true))
+	heading.add_child(count)
 	page.add_child(heading)
-	page.add_child(_label("PRIVATE CHANNELS  /  DEVICE STORAGE", 12, TEXT_MUTED))
+	inbox_search = LineEdit.new()
+	inbox_search.name = "InboxSearch"
+	inbox_search.placeholder_text = "Search contacts or messages"
+	inbox_search.clear_button_enabled = true
+	inbox_search.custom_minimum_size.y = 48
+	inbox_search.add_theme_font_size_override("font_size", 14)
+	inbox_search.add_theme_color_override("font_color", TEXT_MAIN)
+	inbox_search.add_theme_color_override("font_placeholder_color", Color("#686875"))
+	inbox_search.add_theme_stylebox_override("normal", _panel_style(Color("#111117"), Color("#292A35"), 15))
+	inbox_search.add_theme_stylebox_override("focus", _panel_style(Color("#151A20"), Color("#247B87"), 15))
+	inbox_search.text_changed.connect(_filter_conversations)
+	page.add_child(inbox_search)
 
 	var scroll: ScrollContainer = ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	page.add_child(scroll)
-	var list: VBoxContainer = VBoxContainer.new()
-	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	list.add_theme_constant_override("separation", 12)
-	scroll.add_child(list)
+	inbox_list = VBoxContainer.new()
+	inbox_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	inbox_list.add_theme_constant_override("separation", 10)
+	scroll.add_child(inbox_list)
 
+	var index: int = 0
 	for conversation: Dictionary in ChatManager.get_conversations():
-		list.add_child(_conversation_card(conversation))
+		var card: Control = _conversation_card(conversation)
+		inbox_list.add_child(card)
+		_animate_in(card, float(index) * 0.025)
+		index += 1
+
+func _filter_conversations(query: String) -> void:
+	var normalized: String = query.strip_edges().to_lower()
+	if not is_instance_valid(inbox_list):
+		return
+	for child: Node in inbox_list.get_children():
+		if child is Control:
+			var searchable: String = str(child.get_meta("search_text", ""))
+			child.visible = normalized.is_empty() or searchable.contains(normalized)
 
 func _update_navigation() -> void:
+	var more_selected: bool = active_screen in ["map", "story", "hack", "settings"]
 	for screen_id: Variant in nav_buttons.keys():
 		var button: Button = nav_buttons[screen_id]
-		var selected: bool = str(screen_id) == active_screen
+		var selected: bool = (str(screen_id) == active_screen) or (str(screen_id) == "more" and more_selected)
 		button.add_theme_color_override("font_color", ACCENT_CYAN if selected else TEXT_MUTED)
-		button.add_theme_stylebox_override("normal", _panel_style(SURFACE_RAISED if selected else SURFACE, ACCENT_CYAN if selected else BORDER, 14))
+		button.add_theme_stylebox_override("normal", _panel_style(Color("#20232B") if selected else Color("#101015"), Color("#24515A") if selected else Color("#101015"), 15))
+
+func _animate_page() -> void:
+	if not is_instance_valid(page):
+		return
+	page.modulate.a = 0.0
+	var tween: Tween = create_tween()
+	tween.tween_property(page, "modulate:a", 1.0, 0.22).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+func _animate_in(control: Control, delay: float = 0.0) -> void:
+	control.modulate.a = 0.0
+	var destination: Vector2 = control.position
+	control.position = destination + Vector2(0.0, 12.0)
+	var tween: Tween = create_tween().set_parallel(true)
+	tween.tween_property(control, "modulate:a", 1.0, 0.24).set_delay(delay).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(control, "position", destination, 0.28).set_delay(delay).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 func _conversation_card(conversation: Dictionary) -> Control:
 	var conversation_id: String = str(conversation.get("id", ""))
 	var button: Button = Button.new()
 	button.custom_minimum_size.y = 112
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.set_meta("search_text", ("%s %s %s" % [str(conversation.get("name", "")), str(conversation.get("role", "")), str(conversation.get("preview", ""))]).to_lower())
 	button.text = ""
 	button.add_theme_stylebox_override("normal", _panel_style(SURFACE, BORDER, 20))
 	button.add_theme_stylebox_override("hover", _panel_style(SURFACE_RAISED, ACCENT_CYAN, 20))
@@ -172,8 +276,8 @@ func _conversation_card(conversation: Dictionary) -> Control:
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	margin.add_child(row)
 	var avatar: PanelContainer = PanelContainer.new()
-	avatar.custom_minimum_size = Vector2(68, 68)
-	avatar.add_theme_stylebox_override("panel", _panel_style(Color("#20202A"), ACCENT_CYAN if str(conversation.get("status", "")) == "online" else BORDER, 34))
+	avatar.custom_minimum_size = Vector2(62, 62)
+	avatar.add_theme_stylebox_override("panel", _panel_style(Color("#1A242B"), Color("#26717B") if str(conversation.get("status", "")) == "online" else Color("#343440"), 31))
 	var initials: String = str(conversation.get("name", "??")).substr(0, 1).to_upper()
 	var avatar_text: Label = _label(initials, 25, ACCENT_CYAN, true)
 	avatar_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -192,7 +296,7 @@ func _conversation_card(conversation: Dictionary) -> Control:
 		name_row.add_child(_label(str(unread).pad_zeros(2), 13, ACCENT_RED, true))
 	details.add_child(name_row)
 	details.add_child(_label(str(conversation.get("role", "Story character")), 13, TEXT_MUTED))
-	var preview: Label = _label(str(conversation.get("preview", "No messages yet")), 14, TEXT_MUTED)
+	var preview: Label = _label(str(conversation.get("preview", "No messages yet")), 13, Color("#A0A0AA"))
 	preview.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	details.add_child(preview)
 	row.add_child(details)
@@ -236,15 +340,19 @@ func _render_chat() -> void:
 		empty.add_child(_label("This channel is quiet.\nConversation content will appear when you add an episode file.", 16, TEXT_MUTED))
 		stack.add_child(empty)
 	else:
+		var message_index: int = 0
 		for message: Dictionary in messages:
-			stack.add_child(_message_bubble(message))
+			var bubble: Control = _message_bubble(message)
+			stack.add_child(bubble)
+			_animate_in(bubble, minf(float(message_index) * 0.035, 0.35))
+			message_index += 1
 
 	var composer: HBoxContainer = HBoxContainer.new()
 	composer.add_theme_constant_override("separation", 10)
 	message_input = LineEdit.new()
 	message_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	message_input.custom_minimum_size.y = 62
-	message_input.placeholder_text = "Write a message..."
+	message_input.custom_minimum_size.y = 56
+	message_input.placeholder_text = "Message securely..."
 	message_input.add_theme_font_size_override("font_size", 17)
 	message_input.add_theme_color_override("font_color", TEXT_MAIN)
 	message_input.add_theme_stylebox_override("normal", _panel_style(SURFACE, BORDER, 16))
@@ -766,10 +874,10 @@ func _panel_style(fill: Color, stroke: Color, radius: int) -> StyleBoxFlat:
 	style.border_color = stroke
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(radius)
-	style.content_margin_left = 10
-	style.content_margin_right = 10
-	style.content_margin_top = 8
-	style.content_margin_bottom = 8
+	style.content_margin_left = 12
+	style.content_margin_right = 12
+	style.content_margin_top = 9
+	style.content_margin_bottom = 9
 	return style
 
 func _open_chat(conversation_id: String) -> void:
