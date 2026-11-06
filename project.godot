@@ -19,6 +19,7 @@ PuzzleManager="*res://scripts/core/puzzle_manager.gd"
 NotificationManager="*res://scripts/core/notification_manager.gd"
 CallManager="*res://scripts/core/call_manager.gd"
 MediaManager="*res://scripts/core/media_manager.gd"
+HapticsManager="*res://scripts/core/haptics_manager.gd"
 ChatManager="*res://scripts/core/chat_manager.gd"
 
 [display]
