@@ -182,7 +182,7 @@ func _render_screen() -> void:
 		_:
 			active_screen = "inbox"
 			_render_inbox()
-		_animate_page()
+	_animate_page()
 
 func _render_inbox() -> void:
 	var heading: HBoxContainer = HBoxContainer.new()
