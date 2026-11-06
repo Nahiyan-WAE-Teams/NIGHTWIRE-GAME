@@ -809,7 +809,10 @@ func _label(caption: String, size: int, color: Color, bold: bool = false) -> Lab
 		label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0))
 	return label
 
-func _scaled_font_size(size: int) -> int:\n\treturn maxi(12, roundi(float(size) * UI_SCALE))\n\nfunc _panel_style(fill: Color, stroke: Color, radius: int) -> StyleBoxFlat:
+func _scaled_font_size(size: int) -> int:
+	return maxi(12, roundi(float(size) * UI_SCALE))
+
+func _panel_style(fill: Color, stroke: Color, radius: int) -> StyleBoxFlat:
 	var style: StyleBoxFlat = StyleBoxFlat.new()
 	style.bg_color = fill
 	style.border_color = stroke
