@@ -8,6 +8,7 @@ const TEXT_MAIN: Color = Color("#EAEAEA")
 const TEXT_MUTED: Color = Color("#858591")
 const ACCENT_RED: Color = Color("#B97870")
 const ACCENT_GREEN: Color = Color("#879985")
+const UI_SCALE: float = 1.16
 
 var page: VBoxContainer
 var active_screen: String = "inbox"
@@ -44,14 +45,14 @@ func _build_shell() -> void:
 
 	var safe_margin: MarginContainer = MarginContainer.new()
 	safe_margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	safe_margin.add_theme_constant_override("margin_left", 14)
-	safe_margin.add_theme_constant_override("margin_right", 14)
-	safe_margin.add_theme_constant_override("margin_top", 10)
-	safe_margin.add_theme_constant_override("margin_bottom", 8)
+	safe_margin.add_theme_constant_override("margin_left", 18)
+	safe_margin.add_theme_constant_override("margin_right", 18)
+	safe_margin.add_theme_constant_override("margin_top", 14)
+	safe_margin.add_theme_constant_override("margin_bottom", 12)
 	add_child(safe_margin)
 
 	var shell: VBoxContainer = VBoxContainer.new()
-	shell.add_theme_constant_override("separation", 8)
+	shell.add_theme_constant_override("separation", 10)
 	safe_margin.add_child(shell)
 	brand_header = _add_brand_header(shell)
 
@@ -75,7 +76,7 @@ func _build_shell() -> void:
 
 func _add_brand_header(parent: VBoxContainer) -> HBoxContainer:
 	var header: HBoxContainer = HBoxContainer.new()
-	header.custom_minimum_size.y = 34.0
+	header.custom_minimum_size.y = 40.0
 	header.add_theme_constant_override("separation", 8)
 	var brand: Label = _label("NIGHTWIRE", 17, TEXT_MAIN, true)
 	brand.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -108,8 +109,8 @@ func _nav_button(caption: String, screen_id: String) -> Button:
 	button.name = "Nav_" + screen_id.capitalize()
 	button.text = caption
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.custom_minimum_size = Vector2(0, 48)
-	button.add_theme_font_size_override("font_size", 10)
+	button.custom_minimum_size = Vector2(0, 56)
+	button.add_theme_font_size_override("font_size", _scaled_font_size(10))
 	button.add_theme_color_override("font_color", ACCENT_GREEN if active_screen == screen_id else TEXT_MUTED)
 	button.add_theme_stylebox_override("normal", _panel_style(Color("#272D27") if active_screen == screen_id else Color("#191B1D"), Color("#343B34") if active_screen == screen_id else Color("#191B1D"), 8))
 	button.add_theme_stylebox_override("hover", _panel_style(Color("#242925"), Color("#343B34"), 8))
@@ -150,7 +151,7 @@ func _render_screen() -> void:
 	var immersive_chat: bool = active_screen == "chat"
 	brand_header.visible = not immersive_chat
 	navigation_dock.visible = not immersive_chat
-	page.add_theme_constant_override("separation", 8 if immersive_chat else 14)
+	page.add_theme_constant_override("separation", 10 if immersive_chat else 16)
 	_update_navigation()
 	_clear_page()
 	match active_screen:
@@ -192,7 +193,7 @@ func _render_inbox() -> void:
 	inbox_search.placeholder_text = "Search contacts or messages"
 	inbox_search.clear_button_enabled = true
 	inbox_search.custom_minimum_size.y = 42
-	inbox_search.add_theme_font_size_override("font_size", 13)
+	inbox_search.add_theme_font_size_override("font_size", _scaled_font_size(13))
 	inbox_search.add_theme_color_override("font_color", TEXT_MAIN)
 	inbox_search.add_theme_color_override("font_placeholder_color", Color("#686875"))
 	inbox_search.add_theme_stylebox_override("normal", _panel_style(Color("#111117"), Color("#292A35"), 15))
@@ -259,7 +260,7 @@ func _animate_in(control: Control, delay: float = 0.0) -> void:
 func _conversation_card(conversation: Dictionary) -> Control:
 	var conversation_id: String = str(conversation.get("id", ""))
 	var button: Button = Button.new()
-	button.custom_minimum_size.y = 88.0
+	button.custom_minimum_size.y = 100.0
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.set_meta("search_text", ("%s %s %s" % [str(conversation.get("name", "")), str(conversation.get("role", "")), str(conversation.get("preview", ""))]).to_lower())
 	button.text = ""
@@ -271,12 +272,12 @@ func _conversation_card(conversation: Dictionary) -> Control:
 
 	var row: HBoxContainer = HBoxContainer.new()
 	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	row.add_theme_constant_override("separation", 13)
+	row.add_theme_constant_override("separation", 15)
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
 	button.add_child(row)
 
 	var avatar_wrap: Control = Control.new()
-	avatar_wrap.custom_minimum_size = Vector2(58, 58)
+	avatar_wrap.custom_minimum_size = Vector2(64, 64)
 	var avatar: PanelContainer = PanelContainer.new()
 	avatar.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	avatar.add_theme_stylebox_override("panel", _panel_style(Color("#343A35"), Color("#454B45"), 29))
@@ -347,7 +348,7 @@ func _render_chat() -> void:
 	var top: HBoxContainer = HBoxContainer.new()
 	top.add_child(_small_button("‹", _back_to_inbox, 44))
 	var avatar: PanelContainer = PanelContainer.new()
-	avatar.custom_minimum_size = Vector2(42, 42)
+	avatar.custom_minimum_size = Vector2(48, 48)
 	avatar.add_theme_stylebox_override("panel", _panel_style(Color("#25252D"), Color("#3A3A46"), 21))
 	var avatar_label: Label = _label(str(conversation.get("name", "?")).substr(0, 1).to_upper(), 18, TEXT_MAIN, true)
 	avatar_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -395,15 +396,15 @@ func _render_chat() -> void:
 	composer.add_theme_constant_override("separation", 10)
 	message_input = LineEdit.new()
 	message_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	message_input.custom_minimum_size.y = 48
+	message_input.custom_minimum_size.y = 56
 	message_input.placeholder_text = "Message..."
-	message_input.add_theme_font_size_override("font_size", 17)
+	message_input.add_theme_font_size_override("font_size", _scaled_font_size(17))
 	message_input.add_theme_color_override("font_color", TEXT_MAIN)
 	message_input.add_theme_stylebox_override("normal", _panel_style(SURFACE, BORDER, 16))
 	message_input.add_theme_stylebox_override("focus", _panel_style(SURFACE_RAISED, ACCENT_GREEN, 16))
 	message_input.text_submitted.connect(_send_message)
 	composer.add_child(message_input)
-	composer.add_child(_small_button("➤", _send_current_message, 42))
+	composer.add_child(_small_button("➤", _send_current_message, 50))
 	page.add_child(composer)
 	_scroll_to_latest.call_deferred()
 
@@ -530,7 +531,7 @@ func _render_people() -> void:
 	for profile: Dictionary in ContentManager.get_characters():
 		var profile_id: String = str(profile.get("id", ""))
 		var card: Button = Button.new()
-		card.custom_minimum_size.y = 76
+		card.custom_minimum_size.y = 88
 		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		card.text = ""
 		card.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
@@ -540,7 +541,7 @@ func _render_people() -> void:
 		row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		row.add_theme_constant_override("separation", 12)
 		var avatar: PanelContainer = PanelContainer.new()
-		avatar.custom_minimum_size = Vector2(50, 50)
+		avatar.custom_minimum_size = Vector2(56, 56)
 		avatar.add_theme_stylebox_override("panel", _panel_style(Color("#25252D"), Color("#3A3A46"), 25))
 		var initials: Label = _label(str(profile.get("name", "C")).substr(0, 1).to_upper(), 20, TEXT_MAIN, true)
 		initials.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -743,7 +744,7 @@ func _action_button(caption: String, action: Callable) -> Button:
 	var button: Button = Button.new()
 	button.text = caption
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button.custom_minimum_size.y = 52
+	button.custom_minimum_size.y = 58
 	button.add_theme_color_override("font_color", ACCENT_GREEN)
 	button.add_theme_stylebox_override("normal", _panel_style(SURFACE_RAISED, BORDER, 14))
 	button.pressed.connect(action)
@@ -786,8 +787,8 @@ func _empty_panel(message: String) -> Control:
 func _small_button(caption: String, action: Callable, side: int) -> Button:
 	var button: Button = Button.new()
 	button.text = caption
-	button.custom_minimum_size = Vector2(side, side)
-	button.add_theme_font_size_override("font_size", 27)
+	button.custom_minimum_size = Vector2(side + 4, side + 4)
+	button.add_theme_font_size_override("font_size", _scaled_font_size(27))
 	button.add_theme_color_override("font_color", ACCENT_GREEN)
 	button.add_theme_stylebox_override("normal", _panel_style(SURFACE, BORDER, 16))
 	button.add_theme_stylebox_override("hover", _panel_style(SURFACE_RAISED, ACCENT_GREEN, 16))
@@ -802,13 +803,13 @@ func _pulse_haptic() -> void:
 func _label(caption: String, size: int, color: Color, bold: bool = false) -> Label:
 	var label: Label = Label.new()
 	label.text = caption
-	label.add_theme_font_size_override("font_size", size)
+	label.add_theme_font_size_override("font_size", _scaled_font_size(size))
 	label.add_theme_color_override("font_color", color)
 	if bold:
 		label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0))
 	return label
 
-func _panel_style(fill: Color, stroke: Color, radius: int) -> StyleBoxFlat:
+func _scaled_font_size(size: int) -> int:\n\treturn maxi(12, roundi(float(size) * UI_SCALE))\n\nfunc _panel_style(fill: Color, stroke: Color, radius: int) -> StyleBoxFlat:
 	var style: StyleBoxFlat = StyleBoxFlat.new()
 	style.bg_color = fill
 	style.border_color = stroke
