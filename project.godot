@@ -1,5 +1,5 @@
 ; NIGHTWIRE - Godot 4.4
-; Offline-first portrait psychological thriller.
+; Offline-first, data-driven portrait thriller framework.
 
 config_version=5
 
@@ -11,6 +11,9 @@ config/features=PackedStringArray("4.4", "Mobile")
 
 [autoload]
 SaveManager="*res://scripts/core/save_manager.gd"
+ContentManager="*res://scripts/core/content_manager.gd"
+EvidenceManager="*res://scripts/core/evidence_manager.gd"
+StoryManager="*res://scripts/core/story_manager.gd"
 ChatManager="*res://scripts/core/chat_manager.gd"
 
 [display]
