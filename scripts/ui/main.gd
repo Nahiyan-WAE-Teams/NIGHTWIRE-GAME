@@ -238,7 +238,7 @@ func _update_navigation() -> void:
 	var more_selected: bool = active_screen in ["map", "story", "hack", "settings"]
 	for screen_id: Variant in nav_buttons.keys():
 		var button: Button = nav_buttons[screen_id]
-		var selected: bool = (str(screen_id) == active_screen) or (str(screen_id) == "more" and more_selected)
+		var selected: bool = (str(screen_id) == active_screen) or (str(screen_id) == "inbox" and active_screen == "chat") or (str(screen_id) == "more" and more_selected)
 		button.add_theme_color_override("font_color", ACCENT_CYAN if selected else TEXT_MUTED)
 		button.add_theme_stylebox_override("normal", _panel_style(Color("#20232B") if selected else Color("#101015"), Color("#24515A") if selected else Color("#101015"), 15))
 
