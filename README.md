@@ -11,7 +11,8 @@ The game engine and the story content are separate. The engine is built first; e
 ## Current systems
 
 - Godot 4.4 project configured for the Mobile renderer and portrait layout.
-- OLED-dark messenger interface with inbox, 20-character directory, connected evidence corkboard, story launcher, hacking lab, editable city map and settings.
+- Premium OLED-dark mobile messenger interface with a compact four-destination bottom dock, secondary More menu, searchable inbox, layered contact cards, animated screen/card entrances, tactile button feedback and a subtle live signal indicator.
+- Inbox, 20-character directory, connected evidence corkboard, story launcher, hacking lab, editable city map and settings.
 - Twenty editable character slots loaded from JSON.
 - Local conversation history and per-character message storage.
 - Encrypted local save file for conversations, trust, story flags, evidence and episode progress.
