@@ -283,7 +283,22 @@ func _message_bubble(message: Dictionary) -> Control:
 	body.custom_minimum_size.x = 240
 	content.add_child(body)
 	if message_kind == "voice":
+		var waveform: HBoxContainer = HBoxContainer.new()
+		waveform.custom_minimum_size.y = 34
+		waveform.add_theme_constant_override("separation", 3)
+		var heights: Array[int] = [8, 15, 22, 12, 28, 18, 32, 16, 24, 10, 27, 18, 13, 30, 17, 9]
+		for bar_height: int in heights:
+			var bar: ColorRect = ColorRect.new()
+			bar.color = ACCENT_CYAN
+			bar.custom_minimum_size = Vector2(5, float(bar_height))
+			bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			waveform.add_child(bar)
+		content.add_child(waveform)
 		content.add_child(_action_button("PLAY VOICE NOTE", MediaManager.play_voice_note.bind(media_path)))
+	elif message_kind == "image":
+		content.add_child(_action_button("OPEN IMAGE", _open_image_viewer.bind(media_path)))
+	elif message_kind == "document":
+		content.add_child(_action_button("OPEN FILE", _open_document_viewer.bind(media_path)))
 	var time_label: Label = _label(str(message.get("time", "")), 10, TEXT_MUTED)
 	time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	content.add_child(time_label)
@@ -300,6 +315,82 @@ func _message_bubble(message: Dictionary) -> Control:
 	return line
 
 
+
+func _open_image_viewer(media_path: String) -> void:
+	var texture: Texture2D = MediaManager.load_image(media_path)
+	if texture == null:
+		_show_media_error("Image unavailable", "The image file could not be loaded: " + media_path)
+		return
+	var window: Window = Window.new()
+	window.title = "NIGHTWIRE  /  IMAGE EVIDENCE"
+	window.size = Vector2i(900, 1100)
+	window.min_size = Vector2i(420, 560)
+	window.transient = true
+	window.exclusive = true
+	add_child(window)
+	var layout: VBoxContainer = VBoxContainer.new()
+	layout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	layout.add_theme_constant_override("separation", 10)
+	window.add_child(layout)
+	var zoom_row: HBoxContainer = HBoxContainer.new()
+	var zoom_label: Label = _label("ZOOM", 12, TEXT_MUTED, true)
+	zoom_row.add_child(zoom_label)
+	var zoom: HSlider = HSlider.new()
+	zoom.min_value = 0.5
+	zoom.max_value = 2.5
+	zoom.step = 0.1
+	zoom.value = 1.0
+	zoom.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	zoom_row.add_child(zoom)
+	layout.add_child(zoom_row)
+	var scroll: ScrollContainer = ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	layout.add_child(scroll)
+	var preview: TextureRect = TextureRect.new()
+	preview.texture = texture
+	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview.custom_minimum_size = Vector2(texture.get_width(), texture.get_height())
+	preview.size = preview.custom_minimum_size
+	scroll.add_child(preview)
+	zoom.value_changed.connect(func(value: float) -> void:
+		preview.custom_minimum_size = Vector2(texture.get_width(), texture.get_height()) * value
+		preview.size = preview.custom_minimum_size
+	)
+	window.close_requested.connect(window.queue_free)
+	window.popup_centered()
+
+func _open_document_viewer(media_path: String) -> void:
+	if not FileAccess.file_exists(media_path):
+		_show_media_error("File unavailable", "The document could not be found: " + media_path)
+		return
+	var file: FileAccess = FileAccess.open(media_path, FileAccess.READ)
+	if file == null:
+		_show_media_error("File unavailable", "The document could not be opened.")
+		return
+	var content_text: String = file.get_as_text()
+	file.close()
+	if content_text.length() > 50000:
+		content_text = content_text.substr(0, 50000) + "\\n\\n[Preview truncated at 50,000 characters]"
+	var dialog: AcceptDialog = AcceptDialog.new()
+	dialog.title = "NIGHTWIRE  /  DOCUMENT"
+	var preview: RichTextLabel = RichTextLabel.new()
+	preview.custom_minimum_size = Vector2(680, 560)
+	preview.bbcode_enabled = false
+	preview.text = content_text
+	preview.fit_content = false
+	dialog.add_child(preview)
+	add_child(dialog)
+	dialog.confirmed.connect(dialog.queue_free)
+	dialog.popup_centered(Vector2i(760, 720))
+
+func _show_media_error(title_text: String, detail: String) -> void:
+	var dialog: AcceptDialog = AcceptDialog.new()
+	dialog.title = title_text
+	dialog.dialog_text = detail
+	add_child(dialog)
+	dialog.confirmed.connect(dialog.queue_free)
+	dialog.popup_centered(Vector2i(560, 280))
 
 func _open_simulated_call() -> void:
 	if not CallManager.begin_call(active_conversation_id):

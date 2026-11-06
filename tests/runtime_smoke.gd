@@ -11,6 +11,7 @@ func _run_checks() -> void:
 	if get_node_or_null("/root/NotificationManager") == null or get_node_or_null("/root/CallManager") == null or get_node_or_null("/root/MediaManager") == null:
 		_fail("notification and call managers are registered as autoloads")
 	_expect(not MediaManager.play_voice_note("res://missing_voice.ogg"), "missing voice-note assets fail safely")
+	_expect(MediaManager.load_image("res://missing_image.png") == null, "missing image assets fail safely")
 	_expect(ContentManager.get_characters().size() == 20, "all twenty character slots load")
 	_expect(ChatManager.get_conversations().size() == 20, "all twenty characters receive an inbox channel")
 	_expect(ContentManager.get_episodes().is_empty(), "no authored episode is required to boot the framework")
