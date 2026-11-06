@@ -93,6 +93,7 @@ func _nav_button(caption: String, screen_id: String) -> Button:
 	button.add_theme_stylebox_override("hover", _panel_style(SURFACE_RAISED, ACCENT_CYAN, 14))
 	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	button.pressed.connect(_navigate.bind(screen_id))
+	button.pressed.connect(_pulse_haptic)
 	nav_buttons[screen_id] = button
 	return button
 
@@ -698,11 +699,18 @@ func _action_button(caption: String, action: Callable) -> Button:
 	button.add_theme_color_override("font_color", ACCENT_CYAN)
 	button.add_theme_stylebox_override("normal", _panel_style(SURFACE_RAISED, BORDER, 14))
 	button.pressed.connect(action)
+	button.pressed.connect(_pulse_haptic)
 	return button
 
 func _render_settings() -> void:
 	page.add_child(_label("SYSTEM", 25, TEXT_MAIN, true))
 	page.add_child(_empty_panel("NIGHTWIRE runs offline.\nMessages, trust, flags and evidence are stored locally with encrypted save-file support."))
+	var haptics_toggle: CheckBox = CheckBox.new()
+	haptics_toggle.text = "ENABLE HAPTIC FEEDBACK"
+	haptics_toggle.button_pressed = HapticsManager.is_enabled()
+	haptics_toggle.add_theme_color_override("font_color", TEXT_MAIN)
+	haptics_toggle.toggled.connect(HapticsManager.set_enabled)
+	page.add_child(haptics_toggle)
 	page.add_child(_label("CONTENT PIPELINE", 15, ACCENT_CYAN, true))
 	page.add_child(_empty_panel("Add character profiles in data/characters/roster.json.\nAdd one JSON file per episode in data/episodes/.\nThe content validator checks node links before an episode is loaded."))
 	var reset_button: Button = Button.new()
@@ -737,7 +745,11 @@ func _small_button(caption: String, action: Callable, side: int) -> Button:
 	button.add_theme_stylebox_override("hover", _panel_style(SURFACE_RAISED, ACCENT_CYAN, 16))
 	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	button.pressed.connect(action)
+	button.pressed.connect(_pulse_haptic)
 	return button
+
+func _pulse_haptic() -> void:
+	HapticsManager.pulse(24)
 
 func _label(caption: String, size: int, color: Color, bold: bool = false) -> Label:
 	var label: Label = Label.new()
