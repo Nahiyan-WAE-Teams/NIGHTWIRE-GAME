@@ -8,9 +8,16 @@ func _ready() -> void:
 func _run_checks() -> void:
 	if get_node_or_null("/root/SpyManager") == null or get_node_or_null("/root/PuzzleManager") == null:
 		_fail("spy and puzzle managers are registered as autoloads")
-	if get_node_or_null("/root/NotificationManager") == null or get_node_or_null("/root/CallManager") == null or get_node_or_null("/root/MediaManager") == null:
+	if get_node_or_null("/root/NotificationManager") == null or get_node_or_null("/root/CallManager") == null or get_node_or_null("/root/MediaManager") == null or get_node_or_null("/root/HapticsManager") == null:
 		_fail("notification and call managers are registered as autoloads")
 	_expect(not MediaManager.play_voice_note("res://missing_voice.ogg"), "missing voice-note assets fail safely")
+	var haptics_original: bool = HapticsManager.is_enabled()
+	HapticsManager.set_enabled(false)
+	_expect(not HapticsManager.is_enabled(), "haptic preference can be disabled")
+	_expect(not HapticsManager.pulse(20), "disabled haptics do not vibrate")
+	HapticsManager.set_enabled(true)
+	_expect(HapticsManager.is_enabled(), "haptic preference can be enabled")
+	HapticsManager.set_enabled(haptics_original)
 	var map_instance: Variant = load("res://scripts/ui/town_map.gd").new()
 	_expect(map_instance.load_location_data("res://data/world/locations.json"), "town map loads its editable location data")
 	_expect(map_instance.get_locations().size() == 6, "town map exposes six editable locations")

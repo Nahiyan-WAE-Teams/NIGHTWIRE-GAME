@@ -11,12 +11,15 @@ The game engine and the story content are separate. The engine is built first; e
 ## Current systems
 
 - Godot 4.4 project configured for the Mobile renderer and portrait layout.
-- OLED-dark messenger interface with inbox, character directory, evidence dossier, story-file launcher and settings.
+- OLED-dark messenger interface with inbox, 20-character directory, connected evidence corkboard, story launcher, hacking lab, editable city map and settings.
 - Twenty editable character slots loaded from JSON.
 - Local conversation history and per-character message storage.
 - Encrypted local save file for conversations, trust, story flags, evidence and episode progress.
 - Episode JSON loader with validation of required fields and choice destinations.
 - Branching choice engine with trust changes, flag requirements and evidence unlocks.
+- Interactive town map loaded from `data/world/locations.json`.
+- Animated simulated call interface, zoomable image viewer, readable document preview and voice-note waveform.
+- Optional Android haptic feedback with a persistent in-game setting.
 - Content authoring template and guide.
 - GitHub Actions headless import and content-system tests.
 
@@ -27,6 +30,7 @@ The game engine and the story content are separate. The engine is built first; e
 3. Run the project with F6/F5.
 4. Open the **PEOPLE** tab to inspect the 20 character slots.
 5. Open **CHATS** to view each local conversation.
+6. Open **MAP** to inspect the editable city locations.
 6. Open **STORY** to launch any valid episode JSON file you add.
 
 The game currently contains no authored episode, named cast, or fixed mystery. Those are content decisions to be added through JSON.
