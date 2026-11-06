@@ -1,9 +1,9 @@
 extends Control
 
-const BG: Color = Color("#08080A")
-const SURFACE: Color = Color("#111116")
-const SURFACE_RAISED: Color = Color("#191920")
-const BORDER: Color = Color("#292932")
+const BG: Color = Color("#111315")
+const SURFACE: Color = Color("#191B1D")
+const SURFACE_RAISED: Color = Color("#222426")
+const BORDER: Color = Color("#303234")
 const TEXT_MAIN: Color = Color("#EAEAEA")
 const TEXT_MUTED: Color = Color("#858591")
 const ACCENT_RED: Color = Color("#B97870")
@@ -62,7 +62,7 @@ func _build_shell() -> void:
 	shell.add_child(page)
 	navigation_dock = PanelContainer.new()
 	navigation_dock.name = "NavigationDock"
-	navigation_dock.add_theme_stylebox_override("panel", _panel_style(Color("#101015"), Color("#30303B"), 22))
+	navigation_dock.add_theme_stylebox_override("panel", _panel_style(Color("#191B1D"), Color("#292C2D"), 10))
 	var dock_margin: MarginContainer = MarginContainer.new()
 	dock_margin.add_theme_constant_override("margin_left", 7)
 	dock_margin.add_theme_constant_override("margin_right", 7)
@@ -111,9 +111,9 @@ func _nav_button(caption: String, screen_id: String) -> Button:
 	button.custom_minimum_size = Vector2(0, 48)
 	button.add_theme_font_size_override("font_size", 10)
 	button.add_theme_color_override("font_color", ACCENT_GREEN if active_screen == screen_id else TEXT_MUTED)
-	button.add_theme_stylebox_override("normal", _panel_style(Color("#222520") if active_screen == screen_id else Color("#101015"), Color("#354238") if active_screen == screen_id else Color("#101015"), 15))
-	button.add_theme_stylebox_override("hover", _panel_style(Color("#222520"), Color("#526451"), 15))
-	button.add_theme_stylebox_override("pressed", _panel_style(Color("#2B332D"), ACCENT_GREEN, 15))
+	button.add_theme_stylebox_override("normal", _panel_style(Color("#272D27") if active_screen == screen_id else Color("#191B1D"), Color("#343B34") if active_screen == screen_id else Color("#191B1D"), 8))
+	button.add_theme_stylebox_override("hover", _panel_style(Color("#242925"), Color("#343B34"), 8))
+	button.add_theme_stylebox_override("pressed", _panel_style(Color("#2B302B"), Color("#465044"), 8))
 	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	if screen_id == "more":
 		button.pressed.connect(_open_more_menu)
@@ -180,7 +180,7 @@ func _render_inbox() -> void:
 	var title_group: VBoxContainer = VBoxContainer.new()
 	title_group.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_group.add_child(_label("Messages", 27, TEXT_MAIN, true))
-	title_group.add_child(_label("PRIVATE CONVERSATIONS", 9, TEXT_MUTED, true))
+	title_group.add_child(_label("YOUR RECENT CONVERSATIONS", 10, TEXT_MUTED, true))
 	heading.add_child(title_group)
 	var count: PanelContainer = PanelContainer.new()
 	count.add_theme_stylebox_override("panel", _panel_style(Color("#111116"), Color("#292932"), 12))
@@ -231,7 +231,7 @@ func _update_navigation() -> void:
 		var button: Button = nav_buttons[screen_id]
 		var selected: bool = (str(screen_id) == active_screen) or (str(screen_id) == "inbox" and active_screen == "chat") or (str(screen_id) == "more" and more_selected)
 		button.add_theme_color_override("font_color", ACCENT_GREEN if selected else TEXT_MUTED)
-		button.add_theme_stylebox_override("normal", _panel_style(Color("#222520") if selected else Color("#101015"), Color("#354238") if selected else Color("#101015"), 15))
+		button.add_theme_stylebox_override("normal", _panel_style(Color("#272D27") if selected else Color("#191B1D"), Color("#343B34") if selected else Color("#191B1D"), 8))
 
 func _animate_page() -> void:
 	if not is_instance_valid(page):
@@ -259,56 +259,84 @@ func _animate_in(control: Control, delay: float = 0.0) -> void:
 func _conversation_card(conversation: Dictionary) -> Control:
 	var conversation_id: String = str(conversation.get("id", ""))
 	var button: Button = Button.new()
-	button.custom_minimum_size.y = 86.0
+	button.custom_minimum_size.y = 88.0
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.set_meta("search_text", ("%s %s %s" % [str(conversation.get("name", "")), str(conversation.get("role", "")), str(conversation.get("preview", ""))]).to_lower())
 	button.text = ""
 	button.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
-	button.add_theme_stylebox_override("hover", _panel_style(Color("#17171D"), Color("#292932"), 10))
-	button.add_theme_stylebox_override("pressed", _panel_style(Color("#20202A"), Color("#343440"), 10))
+	button.add_theme_stylebox_override("hover", _panel_style(Color("#1D2020"), Color("#1D2020"), 5))
+	button.add_theme_stylebox_override("pressed", _panel_style(Color("#252825"), Color("#252825"), 5))
 	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	button.pressed.connect(_open_chat.bind(conversation_id))
-	var margin: MarginContainer = MarginContainer.new()
-	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	margin.add_theme_constant_override("margin_left", 5)
-	margin.add_theme_constant_override("margin_right", 5)
-	margin.add_theme_constant_override("margin_top", 7)
-	margin.add_theme_constant_override("margin_bottom", 7)
-	button.add_child(margin)
+
 	var row: HBoxContainer = HBoxContainer.new()
+	row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	row.add_theme_constant_override("separation", 13)
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	margin.add_child(row)
+	button.add_child(row)
+
+	var avatar_wrap: Control = Control.new()
+	avatar_wrap.custom_minimum_size = Vector2(58, 58)
 	var avatar: PanelContainer = PanelContainer.new()
-	avatar.custom_minimum_size = Vector2(58, 58)
-	avatar.add_theme_stylebox_override("panel", _panel_style(Color("#25252D"), Color("#3A3A46"), 29))
+	avatar.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	avatar.add_theme_stylebox_override("panel", _panel_style(Color("#343A35"), Color("#454B45"), 29))
 	var initials: String = str(conversation.get("name", "??")).substr(0, 1).to_upper()
-	var avatar_text: Label = _label(initials, 23, Color("#D8D8E0"), true)
+	var avatar_text: Label = _label(initials, 23, Color("#E1E2DC"), true)
 	avatar_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	avatar_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	avatar.add_child(avatar_text)
-	row.add_child(avatar)
+	avatar_wrap.add_child(avatar)
+	if str(conversation.get("status", "inactive")) == "online":
+		var online_dot: PanelContainer = PanelContainer.new()
+		online_dot.custom_minimum_size = Vector2(12, 12)
+		online_dot.position = Vector2(43, 43)
+		online_dot.add_theme_stylebox_override("panel", _panel_style(Color("#91A18C"), Color("#111315"), 6))
+		avatar_wrap.add_child(online_dot)
+	row.add_child(avatar_wrap)
+
 	var details: VBoxContainer = VBoxContainer.new()
 	details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	details.add_theme_constant_override("separation", 4)
+	details.add_theme_constant_override("separation", 5)
 	var name_row: HBoxContainer = HBoxContainer.new()
 	var name_label: Label = _label(str(conversation.get("name", "Unknown")), 17, TEXT_MAIN, true)
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	name_row.add_child(name_label)
+	var timestamp: String = _format_conversation_time(float(conversation.get("updated", 0.0)))
+	var time_label: Label = _label(timestamp, 10, TEXT_MUTED)
+	name_row.add_child(time_label)
 	var unread: int = int(conversation.get("unread", 0))
 	if unread > 0:
-		name_row.add_child(_label(str(unread), 11, ACCENT_RED, true))
+		var unread_label: Label = _label(str(unread), 10, Color("#F0F0EA"), true)
+		unread_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		unread_label.custom_minimum_size = Vector2(19, 19)
+		unread_label.add_theme_stylebox_override("normal", _panel_style(Color("#65735F"), Color("#65735F"), 10))
+		name_row.add_child(unread_label)
 	details.add_child(name_row)
-	var preview: Label = _label(str(conversation.get("preview", "Tap to open conversation")), 13, Color("#A0A0AA"))
+
+	var preview_row: HBoxContainer = HBoxContainer.new()
+	var preview: Label = _label(str(conversation.get("preview", "No messages yet")), 13, Color("#A6A8A3"))
+	preview.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	preview.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	details.add_child(preview)
+	preview_row.add_child(preview)
+	details.add_child(preview_row)
 	row.add_child(details)
+
 	var separator: ColorRect = ColorRect.new()
-	separator.color = Color("#24242B")
+	separator.color = Color("#292C2C")
 	separator.custom_minimum_size = Vector2(0, 1)
 	separator.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	button.add_child(separator)
 	return button
+
+func _format_conversation_time(unix_time: float) -> String:
+	if unix_time <= 0.0:
+		return ""
+	var now: Dictionary = Time.get_datetime_dict_from_system()
+	var message_date: Dictionary = Time.get_datetime_dict_from_unix_time(int(unix_time))
+	if int(now.get("year", 0)) == int(message_date.get("year", -1)) and int(now.get("month", 0)) == int(message_date.get("month", -1)) and int(now.get("day", 0)) == int(message_date.get("day", -1)):
+		return "%02d:%02d" % [int(message_date.get("hour", 0)), int(message_date.get("minute", 0))]
+	return "%02d/%02d" % [int(message_date.get("day", 0)), int(message_date.get("month", 0))]
 
 func _render_chat() -> void:
 	var conversation: Dictionary = ChatManager.get_conversation(active_conversation_id)
@@ -385,42 +413,56 @@ func _message_bubble(message: Dictionary) -> Control:
 	line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var bubble: PanelContainer = PanelContainer.new()
 	bubble.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	bubble.add_theme_stylebox_override("panel", _panel_style(Color("#29332D") if is_player else Color("#1B1B22"), Color("#3A453D") if is_player else Color("#292932"), 15))
+	bubble.custom_maximum_size.x = 350.0
+	var bubble_style: StyleBoxFlat = _panel_style(Color("#343B34") if is_player else Color("#242628"), Color("#343B34") if is_player else Color("#242628"), 14)
+	if is_player:
+		bubble_style.corner_radius_top_left = 14
+		bubble_style.corner_radius_top_right = 5
+		bubble_style.corner_radius_bottom_left = 14
+		bubble_style.corner_radius_bottom_right = 14
+	else:
+		bubble_style.corner_radius_top_left = 5
+		bubble_style.corner_radius_top_right = 14
+		bubble_style.corner_radius_bottom_left = 14
+		bubble_style.corner_radius_bottom_right = 14
+	bubble.add_theme_stylebox_override("panel", bubble_style)
+
 	var margin: MarginContainer = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 16)
-	margin.add_theme_constant_override("margin_right", 16)
-	margin.add_theme_constant_override("margin_top", 12)
-	margin.add_theme_constant_override("margin_bottom", 10)
+	margin.add_theme_constant_override("margin_left", 14)
+	margin.add_theme_constant_override("margin_right", 14)
+	margin.add_theme_constant_override("margin_top", 10)
+	margin.add_theme_constant_override("margin_bottom", 8)
 	bubble.add_child(margin)
 	var content: VBoxContainer = VBoxContainer.new()
-	content.add_theme_constant_override("separation", 6)
+	content.add_theme_constant_override("separation", 5)
 	margin.add_child(content)
+
 	var message_kind: String = str(message.get("kind", "text"))
 	var media_path: String = str(message.get("media_path", ""))
 	var body_text: String = str(message.get("text", ""))
 	match message_kind:
 		"image":
-			body_text = "▧  IMAGE ATTACHMENT\\n" + media_path.get_file() + ("\\n" + body_text if not body_text.is_empty() else "")
+			body_text = "▧  IMAGE ATTACHMENT\n" + media_path.get_file() + ("\n" + body_text if not body_text.is_empty() else "")
 		"video":
-			body_text = "▣  VIDEO CLIP\\n" + media_path.get_file() + ("\\n" + body_text if not body_text.is_empty() else "")
+			body_text = "▣  VIDEO CLIP\n" + media_path.get_file() + ("\n" + body_text if not body_text.is_empty() else "")
 		"document":
-			body_text = "▤  FILE ATTACHMENT\\n" + media_path.get_file() + ("\\n" + body_text if not body_text.is_empty() else "")
+			body_text = "▤  FILE ATTACHMENT\n" + media_path.get_file() + ("\n" + body_text if not body_text.is_empty() else "")
 		"voice":
 			body_text = "VOICE NOTE  •  %0.1fs" % float(message.get("duration", 0.0))
-	var body: Label = _label(body_text, 17, TEXT_MAIN)
+	var body: Label = _label(body_text, 16, TEXT_MAIN)
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	body.custom_minimum_size.x = 190
-	body.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	body.custom_maximum_size.x = 320.0
 	content.add_child(body)
+
 	if message_kind == "voice":
 		var waveform: HBoxContainer = HBoxContainer.new()
-		waveform.custom_minimum_size.y = 34
+		waveform.custom_minimum_size.y = 30
 		waveform.add_theme_constant_override("separation", 3)
 		var heights: Array[int] = [8, 15, 22, 12, 28, 18, 32, 16, 24, 10, 27, 18, 13, 30, 17, 9]
 		for bar_height: int in heights:
 			var bar: ColorRect = ColorRect.new()
-			bar.color = ACCENT_GREEN
-			bar.custom_minimum_size = Vector2(5, float(bar_height))
+			bar.color = Color("#A1AA98")
+			bar.custom_minimum_size = Vector2(4, float(bar_height))
 			bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			waveform.add_child(bar)
 		content.add_child(waveform)
@@ -429,9 +471,14 @@ func _message_bubble(message: Dictionary) -> Control:
 		content.add_child(_action_button("OPEN IMAGE", _open_image_viewer.bind(media_path)))
 	elif message_kind == "document":
 		content.add_child(_action_button("OPEN FILE", _open_document_viewer.bind(media_path)))
-	var time_label: Label = _label(str(message.get("time", "")), 10, TEXT_MUTED)
+
+	var time_text: String = str(message.get("time", ""))
+	if is_player:
+		time_text += "   ✓✓"
+	var time_label: Label = _label(time_text, 10, Color("#A1AA98") if is_player else TEXT_MUTED)
 	time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	content.add_child(time_label)
+
 	if is_player:
 		var left_space: Control = Control.new()
 		left_space.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -443,147 +490,6 @@ func _message_bubble(message: Dictionary) -> Control:
 		right_space.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		line.add_child(right_space)
 	return line
-
-
-
-func _open_image_viewer(media_path: String) -> void:
-	var texture: Texture2D = MediaManager.load_image(media_path)
-	if texture == null:
-		_show_media_error("Image unavailable", "The image file could not be loaded: " + media_path)
-		return
-	var window: Window = Window.new()
-	window.title = "NIGHTWIRE  /  IMAGE EVIDENCE"
-	window.size = Vector2i(440, 760)
-	window.min_size = Vector2i(360, 560)
-	window.transient = true
-	window.exclusive = true
-	add_child(window)
-	var layout: VBoxContainer = VBoxContainer.new()
-	layout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	layout.add_theme_constant_override("separation", 10)
-	window.add_child(layout)
-	var zoom_row: HBoxContainer = HBoxContainer.new()
-	var zoom_label: Label = _label("ZOOM", 12, TEXT_MUTED, true)
-	zoom_row.add_child(zoom_label)
-	var zoom: HSlider = HSlider.new()
-	zoom.min_value = 0.5
-	zoom.max_value = 2.5
-	zoom.step = 0.1
-	zoom.value = 1.0
-	zoom.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	zoom_row.add_child(zoom)
-	layout.add_child(zoom_row)
-	var scroll: ScrollContainer = ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	layout.add_child(scroll)
-	var preview: TextureRect = TextureRect.new()
-	preview.texture = texture
-	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	preview.custom_minimum_size = Vector2(texture.get_width(), texture.get_height())
-	preview.size = preview.custom_minimum_size
-	scroll.add_child(preview)
-	zoom.value_changed.connect(func(value: float) -> void:
-		preview.custom_minimum_size = Vector2(texture.get_width(), texture.get_height()) * value
-		preview.size = preview.custom_minimum_size
-	)
-	window.close_requested.connect(window.queue_free)
-	window.popup_centered()
-
-func _open_document_viewer(media_path: String) -> void:
-	if not FileAccess.file_exists(media_path):
-		_show_media_error("File unavailable", "The document could not be found: " + media_path)
-		return
-	var file: FileAccess = FileAccess.open(media_path, FileAccess.READ)
-	if file == null:
-		_show_media_error("File unavailable", "The document could not be opened.")
-		return
-	var content_text: String = file.get_as_text()
-	file.close()
-	if content_text.length() > 50000:
-		content_text = content_text.substr(0, 50000) + "\\n\\n[Preview truncated at 50,000 characters]"
-	var dialog: AcceptDialog = AcceptDialog.new()
-	dialog.title = "NIGHTWIRE  /  DOCUMENT"
-	var preview: RichTextLabel = RichTextLabel.new()
-	preview.custom_minimum_size = Vector2(360, 520)
-	preview.bbcode_enabled = false
-	preview.text = content_text
-	preview.fit_content = false
-	dialog.add_child(preview)
-	add_child(dialog)
-	dialog.confirmed.connect(dialog.queue_free)
-	dialog.popup_centered(Vector2i(420, 700))
-
-func _show_media_error(title_text: String, detail: String) -> void:
-	var dialog: AcceptDialog = AcceptDialog.new()
-	dialog.title = title_text
-	dialog.dialog_text = detail
-	add_child(dialog)
-	dialog.confirmed.connect(dialog.queue_free)
-	dialog.popup_centered(Vector2i(560, 280))
-
-func _open_simulated_call() -> void:
-	if not CallManager.begin_call(active_conversation_id):
-		return
-	var window: Window = Window.new()
-	window.title = "NIGHTWIRE  /  ENCRYPTED VOICE LINK"
-	window.size = Vector2i(440, 760)
-	window.min_size = Vector2i(360, 560)
-	window.transient = true
-	window.exclusive = true
-	add_child(window)
-	var layout: VBoxContainer = VBoxContainer.new()
-	layout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	layout.add_theme_constant_override("separation", 14)
-	window.add_child(layout)
-	var identity: VBoxContainer = VBoxContainer.new()
-	identity.add_child(_label("INCOMING CHANNEL", 12, ACCENT_RED, true))
-	identity.add_child(_label(str(ChatManager.get_conversation(active_conversation_id).get("name", "UNKNOWN")), 25, TEXT_MAIN, true))
-	identity.add_child(_label("ENCRYPTED LINK  /  VIDEO STREAM NOT CONNECTED", 11, TEXT_MUTED))
-	layout.add_child(identity)
-	var visual: Control = load("res://scripts/ui/call_visual.gd").new()
-	visual.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	layout.add_child(visual)
-	var status: Label = _label("SIGNAL STABLE  •  LOCAL SIMULATION", 12, ACCENT_GREEN, true)
-	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	layout.add_child(status)
-	var controls: HBoxContainer = HBoxContainer.new()
-	call_mute_button = _action_button("MUTE MIC", _toggle_call_mute)
-	controls.add_child(call_mute_button)
-	var end_button: Button = _action_button("END CALL", func() -> void:
-		_end_call_window(window)
-	)
-	end_button.add_theme_color_override("font_color", ACCENT_RED)
-	controls.add_child(end_button)
-	layout.add_child(controls)
-	window.close_requested.connect(_end_call_window.bind(window))
-	window.popup_centered()
-
-func _toggle_call_mute() -> void:
-	CallManager.set_muted(not CallManager.muted)
-	if is_instance_valid(call_mute_button):
-		call_mute_button.text = "UNMUTE MIC" if CallManager.muted else "MUTE MIC"
-
-func _end_call_window(window: Window) -> void:
-	CallManager.end_call()
-	if is_instance_valid(window):
-		window.queue_free()
-
-func _inspect_private_chat() -> void:
-	var result: Dictionary = SpyManager.inspect_private_messages(active_conversation_id)
-	var dialog: AcceptDialog = AcceptDialog.new()
-	if bool(result.get("caught", false)):
-		dialog.dialog_text = "ACCESS DETECTED\\nThe contact noticed the intrusion. Trust decreased."
-	else:
-		var messages: Variant = result.get("messages", [])
-		var lines: PackedStringArray = PackedStringArray()
-		if messages is Array:
-			for message: Variant in messages:
-				lines.append(str(message))
-		dialog.dialog_text = "PRIVATE CACHE\\n" + ("\\n".join(lines) if not lines.is_empty() else "No private messages are stored for this contact.")
-	add_child(dialog)
-	dialog.confirmed.connect(dialog.queue_free)
-	dialog.popup_centered(Vector2i(560, 360))
 
 func _render_evidence() -> void:
 	page.add_child(_label("Clues", 27, TEXT_MAIN, true))
