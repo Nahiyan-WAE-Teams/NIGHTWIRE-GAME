@@ -44,6 +44,18 @@ func append_character_message(conversation_id: String, message_text: String) -> 
 		return false
 	return _append_message(conversation_id, "character", clean_text)
 
+func send_media_message(conversation_id: String, media_kind: String, media_path: String, caption: String = "", duration_seconds: float = 0.0) -> bool:
+	if not ["image", "voice", "video", "document"].has(media_kind):
+		return false
+	if media_path.strip_edges().is_empty():
+		return false
+	var metadata: Dictionary = {
+		"kind": media_kind,
+		"media_path": media_path,
+		"duration": maxf(duration_seconds, 0.0)
+	}
+	return _append_message(conversation_id, "player", caption.strip_edges(), metadata)
+
 func mark_read(conversation_id: String) -> void:
 	var index: int = _find_index(conversation_id)
 	if index < 0 or int(conversations[index].get("unread", 0)) == 0:
@@ -58,17 +70,20 @@ func get_unread_total() -> int:
 		total += int(conversation.get("unread", 0))
 	return total
 
-func _append_message(conversation_id: String, sender: String, message_text: String) -> bool:
+func _append_message(conversation_id: String, sender: String, message_text: String, metadata: Dictionary = {}) -> bool:
 	var index: int = _find_index(conversation_id)
 	if index < 0:
 		return false
 	var messages: Array = conversations[index].get("messages", [])
-	messages.append({
+	var message: Dictionary = {
 		"id": str(Time.get_ticks_usec()),
 		"sender": sender,
 		"text": message_text,
-		"time": Time.get_time_string_from_system()
-	})
+		"time": Time.get_time_string_from_system(),
+		"kind": "text"
+	}
+	message.merge(metadata, true)
+	messages.append(message)
 	conversations[index]["messages"] = messages
 	conversations[index]["preview"] = message_text
 	conversations[index]["unread"] = int(conversations[index].get("unread", 0)) + (1 if sender == "character" else 0)

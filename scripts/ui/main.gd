@@ -208,6 +208,7 @@ func _render_chat() -> void:
 	identity.add_child(_label(str(conversation.get("role", "STORY CONTACT")), 12, ACCENT_CYAN, true))
 	top.add_child(identity)
 	top.add_child(_small_button("SPY", _inspect_private_chat, 58))
+	top.add_child(_small_button("CALL", _open_simulated_call, 58))
 	top.add_child(_label("LOCAL", 12, TEXT_MUTED, true))
 	page.add_child(top)
 	var divider: ColorRect = ColorRect.new()
@@ -265,10 +266,24 @@ func _message_bubble(message: Dictionary) -> Control:
 	var content: VBoxContainer = VBoxContainer.new()
 	content.add_theme_constant_override("separation", 6)
 	margin.add_child(content)
-	var body: Label = _label(str(message.get("text", "")), 17, TEXT_MAIN)
+	var message_kind: String = str(message.get("kind", "text"))
+	var media_path: String = str(message.get("media_path", ""))
+	var body_text: String = str(message.get("text", ""))
+	match message_kind:
+		"image":
+			body_text = "▧  IMAGE ATTACHMENT\\n" + media_path.get_file() + ("\\n" + body_text if not body_text.is_empty() else "")
+		"video":
+			body_text = "▣  VIDEO CLIP\\n" + media_path.get_file() + ("\\n" + body_text if not body_text.is_empty() else "")
+		"document":
+			body_text = "▤  FILE ATTACHMENT\\n" + media_path.get_file() + ("\\n" + body_text if not body_text.is_empty() else "")
+		"voice":
+			body_text = "VOICE NOTE  •  %0.1fs" % float(message.get("duration", 0.0))
+	var body: Label = _label(body_text, 17, TEXT_MAIN)
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.custom_minimum_size.x = 240
 	content.add_child(body)
+	if message_kind == "voice":
+		content.add_child(_action_button("PLAY VOICE NOTE", MediaManager.play_voice_note.bind(media_path)))
 	var time_label: Label = _label(str(message.get("time", "")), 10, TEXT_MUTED)
 	time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	content.add_child(time_label)
@@ -284,6 +299,23 @@ func _message_bubble(message: Dictionary) -> Control:
 		line.add_child(right_space)
 	return line
 
+
+
+func _open_simulated_call() -> void:
+	if not CallManager.begin_call(active_conversation_id):
+		return
+	var dialog: AcceptDialog = AcceptDialog.new()
+	dialog.title = "NIGHTWIRE  /  VOICE LINK"
+	dialog.dialog_text = "SIMULATED CALL ACTIVE\\n\\nThe call channel is ready. Camera and microphone streaming are not enabled in this offline build."
+	add_child(dialog)
+	dialog.confirmed.connect(_end_simulated_call.bind(dialog))
+	dialog.close_requested.connect(_end_simulated_call.bind(dialog))
+	dialog.popup_centered(Vector2i(560, 360))
+
+func _end_simulated_call(dialog: AcceptDialog) -> void:
+	CallManager.end_call()
+	if is_instance_valid(dialog):
+		dialog.queue_free()
 
 func _inspect_private_chat() -> void:
 	var result: Dictionary = SpyManager.inspect_private_messages(active_conversation_id)
