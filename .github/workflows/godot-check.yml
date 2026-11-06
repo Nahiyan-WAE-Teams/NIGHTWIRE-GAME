@@ -28,5 +28,8 @@ jobs:
       - name: Run content-system tests
         run: godot --headless --path . --script res://tests/run_tests.gd
 
+      - name: Verify autoloaded game systems
+        run: godot --headless --path . res://tests/runtime_smoke.tscn
+
       - name: Launch main scene headlessly
         run: godot --headless --path . --quit-after 3
