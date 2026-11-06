@@ -6,8 +6,8 @@ const SURFACE_RAISED: Color = Color("#191920")
 const BORDER: Color = Color("#292932")
 const TEXT_MAIN: Color = Color("#EAEAEA")
 const TEXT_MUTED: Color = Color("#858591")
-const ACCENT_RED: Color = Color("#FF3B30")
-const ACCENT_CYAN: Color = Color("#00E5FF")
+const ACCENT_RED: Color = Color("#B97870")
+const ACCENT_GREEN: Color = Color("#879985")
 
 var page: VBoxContainer
 var active_screen: String = "inbox"
@@ -84,10 +84,7 @@ func _add_brand_header(parent: VBoxContainer) -> HBoxContainer:
 	status.add_theme_constant_override("separation", 5)
 	var signal_dot: Label = _label("●", 9, ACCENT_RED, true)
 	status.add_child(signal_dot)
-	var pulse: Tween = create_tween().set_loops()
-	pulse.tween_property(signal_dot, "modulate:a", 0.35, 0.9).set_trans(Tween.TRANS_SINE)
-	pulse.tween_property(signal_dot, "modulate:a", 1.0, 0.9).set_trans(Tween.TRANS_SINE)
-	status.add_child(_label("PRIVATE SIGNAL", 9, TEXT_MUTED, true))
+	status.add_child(_label("OFFLINE  ·  PRIVATE", 9, TEXT_MUTED, true))
 	header.add_child(status)
 	parent.add_child(header)
 	var hairline: ColorRect = ColorRect.new()
@@ -113,10 +110,10 @@ func _nav_button(caption: String, screen_id: String) -> Button:
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.custom_minimum_size = Vector2(0, 48)
 	button.add_theme_font_size_override("font_size", 10)
-	button.add_theme_color_override("font_color", ACCENT_CYAN if active_screen == screen_id else TEXT_MUTED)
-	button.add_theme_stylebox_override("normal", _panel_style(Color("#20232B") if active_screen == screen_id else Color("#101015"), Color("#24515A") if active_screen == screen_id else Color("#101015"), 15))
-	button.add_theme_stylebox_override("hover", _panel_style(Color("#20232B"), Color("#247B87"), 15))
-	button.add_theme_stylebox_override("pressed", _panel_style(Color("#26323A"), ACCENT_CYAN, 15))
+	button.add_theme_color_override("font_color", ACCENT_GREEN if active_screen == screen_id else TEXT_MUTED)
+	button.add_theme_stylebox_override("normal", _panel_style(Color("#222520") if active_screen == screen_id else Color("#101015"), Color("#354238") if active_screen == screen_id else Color("#101015"), 15))
+	button.add_theme_stylebox_override("hover", _panel_style(Color("#222520"), Color("#526451"), 15))
+	button.add_theme_stylebox_override("pressed", _panel_style(Color("#2B332D"), ACCENT_GREEN, 15))
 	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	if screen_id == "more":
 		button.pressed.connect(_open_more_menu)
@@ -199,7 +196,7 @@ func _render_inbox() -> void:
 	inbox_search.add_theme_color_override("font_color", TEXT_MAIN)
 	inbox_search.add_theme_color_override("font_placeholder_color", Color("#686875"))
 	inbox_search.add_theme_stylebox_override("normal", _panel_style(Color("#111117"), Color("#292A35"), 15))
-	inbox_search.add_theme_stylebox_override("focus", _panel_style(Color("#151A20"), Color("#247B87"), 15))
+	inbox_search.add_theme_stylebox_override("focus", _panel_style(Color("#1B201C"), Color("#526451"), 15))
 	inbox_search.text_changed.connect(_filter_conversations)
 	page.add_child(inbox_search)
 
@@ -233,8 +230,8 @@ func _update_navigation() -> void:
 	for screen_id: Variant in nav_buttons.keys():
 		var button: Button = nav_buttons[screen_id]
 		var selected: bool = (str(screen_id) == active_screen) or (str(screen_id) == "inbox" and active_screen == "chat") or (str(screen_id) == "more" and more_selected)
-		button.add_theme_color_override("font_color", ACCENT_CYAN if selected else TEXT_MUTED)
-		button.add_theme_stylebox_override("normal", _panel_style(Color("#20232B") if selected else Color("#101015"), Color("#24515A") if selected else Color("#101015"), 15))
+		button.add_theme_color_override("font_color", ACCENT_GREEN if selected else TEXT_MUTED)
+		button.add_theme_stylebox_override("normal", _panel_style(Color("#222520") if selected else Color("#101015"), Color("#354238") if selected else Color("#101015"), 15))
 
 func _animate_page() -> void:
 	if not is_instance_valid(page):
@@ -334,7 +331,7 @@ func _render_chat() -> void:
 	identity.add_theme_constant_override("separation", 2)
 	identity.add_child(_label(str(conversation.get("name", "Unknown")), 17, TEXT_MAIN, true))
 	var status_text: String = "online" if str(conversation.get("status", "")) == "online" else "last seen recently"
-	identity.add_child(_label(status_text, 10, Color("#8FBA9A") if status_text == "online" else TEXT_MUTED))
+	identity.add_child(_label(status_text, 10, Color("#91A58F") if status_text == "online" else TEXT_MUTED))
 	top.add_child(identity)
 	top.add_child(_small_button("☎", _open_simulated_call, 44))
 	top.add_child(_small_button("⋮", _inspect_private_chat, 38))
@@ -375,7 +372,7 @@ func _render_chat() -> void:
 	message_input.add_theme_font_size_override("font_size", 17)
 	message_input.add_theme_color_override("font_color", TEXT_MAIN)
 	message_input.add_theme_stylebox_override("normal", _panel_style(SURFACE, BORDER, 16))
-	message_input.add_theme_stylebox_override("focus", _panel_style(SURFACE_RAISED, ACCENT_CYAN, 16))
+	message_input.add_theme_stylebox_override("focus", _panel_style(SURFACE_RAISED, ACCENT_GREEN, 16))
 	message_input.text_submitted.connect(_send_message)
 	composer.add_child(message_input)
 	composer.add_child(_small_button("➤", _send_current_message, 42))
@@ -388,7 +385,7 @@ func _message_bubble(message: Dictionary) -> Control:
 	line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var bubble: PanelContainer = PanelContainer.new()
 	bubble.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	bubble.add_theme_stylebox_override("panel", _panel_style(Color("#24343A") if is_player else Color("#1B1B22"), Color("#35464B") if is_player else Color("#292932"), 15))
+	bubble.add_theme_stylebox_override("panel", _panel_style(Color("#29332D") if is_player else Color("#1B1B22"), Color("#3A453D") if is_player else Color("#292932"), 15))
 	var margin: MarginContainer = MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 16)
 	margin.add_theme_constant_override("margin_right", 16)
@@ -422,7 +419,7 @@ func _message_bubble(message: Dictionary) -> Control:
 		var heights: Array[int] = [8, 15, 22, 12, 28, 18, 32, 16, 24, 10, 27, 18, 13, 30, 17, 9]
 		for bar_height: int in heights:
 			var bar: ColorRect = ColorRect.new()
-			bar.color = ACCENT_CYAN
+			bar.color = ACCENT_GREEN
 			bar.custom_minimum_size = Vector2(5, float(bar_height))
 			bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			waveform.add_child(bar)
@@ -547,7 +544,7 @@ func _open_simulated_call() -> void:
 	var visual: Control = load("res://scripts/ui/call_visual.gd").new()
 	visual.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	layout.add_child(visual)
-	var status: Label = _label("SIGNAL STABLE  •  LOCAL SIMULATION", 12, ACCENT_CYAN, true)
+	var status: Label = _label("SIGNAL STABLE  •  LOCAL SIMULATION", 12, ACCENT_GREEN, true)
 	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	layout.add_child(status)
 	var controls: HBoxContainer = HBoxContainer.new()
@@ -681,9 +678,9 @@ func _render_story() -> void:
 	var current_node: Dictionary = StoryManager.get_current_node()
 	if not current_node.is_empty():
 		var current_panel: PanelContainer = PanelContainer.new()
-		current_panel.add_theme_stylebox_override("panel", _panel_style(SURFACE_RAISED, ACCENT_CYAN, 18))
+		current_panel.add_theme_stylebox_override("panel", _panel_style(SURFACE_RAISED, ACCENT_GREEN, 18))
 		var current_content: VBoxContainer = VBoxContainer.new()
-		current_content.add_child(_label("NOW PLAYING  /  " + StoryManager.active_episode_id.to_upper(), 12, ACCENT_CYAN, true))
+		current_content.add_child(_label("NOW PLAYING  /  " + StoryManager.active_episode_id.to_upper(), 12, ACCENT_GREEN, true))
 		current_content.add_child(_label(str(current_node.get("speaker", "SYSTEM")).to_upper(), 13, TEXT_MUTED, true))
 		var story_text: Label = _label(str(current_node.get("text", "")), 17, TEXT_MAIN)
 		story_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -695,9 +692,9 @@ func _render_story() -> void:
 				var choice_button: Button = Button.new()
 				choice_button.text = str(choice.get("text", "Continue"))
 				choice_button.custom_minimum_size.y = 56
-				choice_button.add_theme_color_override("font_color", ACCENT_CYAN)
+				choice_button.add_theme_color_override("font_color", ACCENT_GREEN)
 				choice_button.add_theme_stylebox_override("normal", _panel_style(SURFACE, BORDER, 14))
-				choice_button.add_theme_stylebox_override("hover", _panel_style(Color("#20202A"), ACCENT_CYAN, 14))
+				choice_button.add_theme_stylebox_override("hover", _panel_style(Color("#20202A"), ACCENT_GREEN, 14))
 				choice_button.pressed.connect(_choose_story_choice.bind(choice_index))
 				current_content.add_child(choice_button)
 		else:
@@ -729,7 +726,7 @@ func _render_story() -> void:
 		var launch: Button = Button.new()
 		launch.text = "OPEN"
 		launch.custom_minimum_size = Vector2(86, 48)
-		launch.add_theme_color_override("font_color", ACCENT_CYAN)
+		launch.add_theme_color_override("font_color", ACCENT_GREEN)
 		launch.add_theme_stylebox_override("normal", _panel_style(SURFACE_RAISED, BORDER, 12))
 		launch.pressed.connect(_start_episode.bind(str(episode.get("id", ""))))
 		layout.add_child(launch)
@@ -755,7 +752,7 @@ func _render_hack() -> void:
 	var pattern_panel: PanelContainer = PanelContainer.new()
 	pattern_panel.add_theme_stylebox_override("panel", _panel_style(SURFACE, BORDER, 18))
 	var pattern_box: VBoxContainer = VBoxContainer.new()
-	pattern_box.add_child(_label("01  PATTERN TRACE", 17, ACCENT_CYAN, true))
+	pattern_box.add_child(_label("01  PATTERN TRACE", 17, ACCENT_GREEN, true))
 	pattern_box.add_child(_label("Reconstruct the four-step access pattern.", 13, TEXT_MUTED))
 	pattern_box.add_child(_label("INPUT: " + ("  ›  ".join(_pattern_strings()) if not pattern_entry.is_empty() else "—"), 18, TEXT_MAIN, true))
 	pattern_box.add_child(_label(pattern_feedback, 12, ACCENT_RED if pattern_feedback.begins_with("DENIED") else TEXT_MUTED))
@@ -765,7 +762,7 @@ func _render_hack() -> void:
 		number_button.text = str(number)
 		number_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		number_button.custom_minimum_size.y = 56
-		number_button.add_theme_color_override("font_color", ACCENT_CYAN)
+		number_button.add_theme_color_override("font_color", ACCENT_GREEN)
 		number_button.add_theme_stylebox_override("normal", _panel_style(SURFACE_RAISED, BORDER, 14))
 		number_button.pressed.connect(_append_pattern_number.bind(number))
 		number_row.add_child(number_button)
@@ -780,7 +777,7 @@ func _render_hack() -> void:
 	var password_panel: PanelContainer = PanelContainer.new()
 	password_panel.add_theme_stylebox_override("panel", _panel_style(SURFACE, BORDER, 18))
 	var password_box: VBoxContainer = VBoxContainer.new()
-	password_box.add_child(_label("02  PASSWORD ANAGRAM", 17, ACCENT_CYAN, true))
+	password_box.add_child(_label("02  PASSWORD ANAGRAM", 17, ACCENT_GREEN, true))
 	password_box.add_child(_label("DECODE: HTGIN", 13, TEXT_MUTED, true))
 	var password_input: LineEdit = LineEdit.new()
 	password_input.placeholder_text = "Enter decrypted word"
@@ -841,7 +838,7 @@ func _action_button(caption: String, action: Callable) -> Button:
 	button.text = caption
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.custom_minimum_size.y = 52
-	button.add_theme_color_override("font_color", ACCENT_CYAN)
+	button.add_theme_color_override("font_color", ACCENT_GREEN)
 	button.add_theme_stylebox_override("normal", _panel_style(SURFACE_RAISED, BORDER, 14))
 	button.pressed.connect(action)
 	button.pressed.connect(_pulse_haptic)
@@ -856,7 +853,7 @@ func _render_settings() -> void:
 	haptics_toggle.add_theme_color_override("font_color", TEXT_MAIN)
 	haptics_toggle.toggled.connect(HapticsManager.set_enabled)
 	page.add_child(haptics_toggle)
-	page.add_child(_label("CONTENT PIPELINE", 15, ACCENT_CYAN, true))
+	page.add_child(_label("CONTENT PIPELINE", 15, ACCENT_GREEN, true))
 	page.add_child(_empty_panel("Add character profiles in data/characters/roster.json.\nAdd one JSON file per episode in data/episodes/.\nThe content validator checks node links before an episode is loaded."))
 	var reset_button: Button = Button.new()
 	reset_button.text = "RESET LOCAL GAME DATA"
@@ -885,9 +882,9 @@ func _small_button(caption: String, action: Callable, side: int) -> Button:
 	button.text = caption
 	button.custom_minimum_size = Vector2(side, side)
 	button.add_theme_font_size_override("font_size", 27)
-	button.add_theme_color_override("font_color", ACCENT_CYAN)
+	button.add_theme_color_override("font_color", ACCENT_GREEN)
 	button.add_theme_stylebox_override("normal", _panel_style(SURFACE, BORDER, 16))
-	button.add_theme_stylebox_override("hover", _panel_style(SURFACE_RAISED, ACCENT_CYAN, 16))
+	button.add_theme_stylebox_override("hover", _panel_style(SURFACE_RAISED, ACCENT_GREEN, 16))
 	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	button.pressed.connect(action)
 	button.pressed.connect(_pulse_haptic)
