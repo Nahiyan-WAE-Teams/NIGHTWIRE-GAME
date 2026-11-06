@@ -9,7 +9,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_02",
@@ -19,7 +20,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_03",
@@ -29,7 +31,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_04",
@@ -39,7 +42,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_05",
@@ -49,7 +53,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_06",
@@ -59,7 +64,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_07",
@@ -69,7 +75,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_08",
@@ -79,7 +86,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_09",
@@ -89,7 +97,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_10",
@@ -99,7 +108,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_11",
@@ -109,7 +119,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_12",
@@ -119,7 +130,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_13",
@@ -129,7 +141,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_14",
@@ -139,7 +152,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_15",
@@ -149,7 +163,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_16",
@@ -159,7 +174,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_17",
@@ -169,7 +185,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_18",
@@ -179,7 +196,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_19",
@@ -189,7 +207,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     },
     {
       "id": "contact_20",
@@ -199,7 +218,8 @@
       "bio": "",
       "avatar": "",
       "color": "#00E5FF",
-      "tags": []
+      "tags": [],
+      "private_messages": []
     }
   ]
 }
