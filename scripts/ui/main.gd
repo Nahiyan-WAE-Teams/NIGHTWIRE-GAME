@@ -73,6 +73,7 @@ func _build_navigation() -> HBoxContainer:
 	nav.add_child(_nav_button("EVIDENCE", "evidence"))
 	nav.add_child(_nav_button("PEOPLE", "people"))
 	nav.add_child(_nav_button("STORY", "story"))
+	nav.add_child(_nav_button("HACK", "hack"))
 	nav.add_child(_nav_button("SETTINGS", "settings"))
 	return nav
 
@@ -104,6 +105,8 @@ func _render_screen() -> void:
 			_render_people()
 		"story":
 			_render_story()
+		"hack":
+			_render_hack()
 		"settings":
 			_render_settings()
 		_:
@@ -201,6 +204,7 @@ func _render_chat() -> void:
 	identity.add_child(_label(str(conversation.get("name", "Unknown")), 21, TEXT_MAIN, true))
 	identity.add_child(_label(str(conversation.get("role", "STORY CONTACT")), 12, ACCENT_CYAN, true))
 	top.add_child(identity)
+	top.add_child(_small_button("SPY", _inspect_private_chat, 58))
 	top.add_child(_label("LOCAL", 12, TEXT_MUTED, true))
 	page.add_child(top)
 	var divider: ColorRect = ColorRect.new()
@@ -276,6 +280,23 @@ func _message_bubble(message: Dictionary) -> Control:
 		right_space.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		line.add_child(right_space)
 	return line
+
+
+func _inspect_private_chat() -> void:
+	var result: Dictionary = SpyManager.inspect_private_messages(active_conversation_id)
+	var dialog: AcceptDialog = AcceptDialog.new()
+	if bool(result.get("caught", false)):
+		dialog.dialog_text = "ACCESS DETECTED\\nThe contact noticed the intrusion. Trust decreased."
+	else:
+		var messages: Variant = result.get("messages", [])
+		var lines: PackedStringArray = PackedStringArray()
+		if messages is Array:
+			for message: Variant in messages:
+				lines.append(str(message))
+		dialog.dialog_text = "PRIVATE CACHE\\n" + ("\\n".join(lines) if not lines.is_empty() else "No private messages are stored for this contact.")
+	add_child(dialog)
+	dialog.confirmed.connect(dialog.queue_free)
+	dialog.popup_centered(Vector2i(560, 360))
 
 func _render_evidence() -> void:
 	page.add_child(_label("EVIDENCE", 25, TEXT_MAIN, true))
@@ -396,6 +417,96 @@ func _choose_story_choice(choice_index: int) -> void:
 func _on_story_node_changed(_episode_id: String, _node_id: String, _node: Dictionary) -> void:
 	if active_screen == "story":
 		_render_screen()
+
+
+func _render_hack() -> void:
+	page.add_child(_label("SIGNAL LAB", 25, TEXT_MAIN, true))
+	page.add_child(_label("LOCAL PUZZLES  /  PROGRESS FLAGS SAVE WITH YOUR STORY", 11, TEXT_MUTED))
+	var pattern_panel: PanelContainer = PanelContainer.new()
+	pattern_panel.add_theme_stylebox_override("panel", _panel_style(SURFACE, BORDER, 18))
+	var pattern_box: VBoxContainer = VBoxContainer.new()
+	pattern_box.add_child(_label("01  PATTERN TRACE", 17, ACCENT_CYAN, true))
+	pattern_box.add_child(_label("Reconstruct the four-step access pattern.", 13, TEXT_MUTED))
+	pattern_box.add_child(_label("INPUT: " + ("  ›  ".join(_pattern_strings()) if not pattern_entry.is_empty() else "—"), 18, TEXT_MAIN, true))
+	pattern_box.add_child(_label(pattern_feedback, 12, ACCENT_RED if pattern_feedback.begins_with("DENIED") else TEXT_MUTED))
+	var number_row: HBoxContainer = HBoxContainer.new()
+	for number: int in range(1, 5):
+		var number_button: Button = Button.new()
+		number_button.text = str(number)
+		number_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		number_button.custom_minimum_size.y = 56
+		number_button.add_theme_color_override("font_color", ACCENT_CYAN)
+		number_button.add_theme_stylebox_override("normal", _panel_style(SURFACE_RAISED, BORDER, 14))
+		number_button.pressed.connect(_append_pattern_number.bind(number))
+		number_row.add_child(number_button)
+	pattern_box.add_child(number_row)
+	var pattern_actions: HBoxContainer = HBoxContainer.new()
+	pattern_actions.add_child(_action_button("CLEAR", _clear_pattern))
+	pattern_actions.add_child(_action_button("VERIFY", _submit_pattern))
+	pattern_box.add_child(pattern_actions)
+	pattern_panel.add_child(pattern_box)
+	page.add_child(pattern_panel)
+
+	var password_panel: PanelContainer = PanelContainer.new()
+	password_panel.add_theme_stylebox_override("panel", _panel_style(SURFACE, BORDER, 18))
+	var password_box: VBoxContainer = VBoxContainer.new()
+	password_box.add_child(_label("02  PASSWORD ANAGRAM", 17, ACCENT_CYAN, true))
+	password_box.add_child(_label("DECODE: HTGIN", 13, TEXT_MUTED, true))
+	var password_input: LineEdit = LineEdit.new()
+	password_input.placeholder_text = "Enter decrypted word"
+	password_input.add_theme_font_size_override("font_size", 17)
+	password_input.add_theme_color_override("font_color", TEXT_MAIN)
+	password_input.add_theme_stylebox_override("normal", _panel_style(SURFACE_RAISED, BORDER, 14))
+	password_input.text_submitted.connect(_submit_password)
+	password_box.add_child(password_input)
+	password_box.add_child(_label(password_feedback, 12, TEXT_MUTED))
+	password_box.add_child(_action_button("DECRYPT", func(): _submit_password(password_input.text)))
+	password_panel.add_child(password_box)
+	page.add_child(password_panel)
+
+func _pattern_strings() -> PackedStringArray:
+	var values: PackedStringArray = PackedStringArray()
+	for number: int in pattern_entry:
+		values.append(str(number))
+	return values
+
+func _append_pattern_number(number: int) -> void:
+	if pattern_entry.size() >= 4:
+		return
+	pattern_entry.append(number)
+	pattern_feedback = "PATTERN CAPTURED"
+	_render_screen()
+
+func _clear_pattern() -> void:
+	pattern_entry.clear()
+	pattern_feedback = "NO INPUT YET"
+	_render_screen()
+
+func _submit_pattern() -> void:
+	if PuzzleManager.validate_pattern([2, 4, 1, 3], pattern_entry):
+		PuzzleManager.complete_puzzle("signal_pattern_solved")
+		pattern_feedback = "ACCESS GRANTED  /  FLAG SAVED"
+	else:
+		pattern_feedback = "DENIED  /  PATTERN DOES NOT MATCH"
+	_render_screen()
+
+func _submit_password(value: String) -> void:
+	if PuzzleManager.validate_anagram("NIGHT", value):
+		PuzzleManager.complete_puzzle("password_anagram_solved")
+		password_feedback = "DECRYPTED  /  FLAG SAVED"
+	else:
+		password_feedback = "DECRYPTION FAILED"
+	_render_screen()
+
+func _action_button(caption: String, action: Callable) -> Button:
+	var button: Button = Button.new()
+	button.text = caption
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.custom_minimum_size.y = 52
+	button.add_theme_color_override("font_color", ACCENT_CYAN)
+	button.add_theme_stylebox_override("normal", _panel_style(SURFACE_RAISED, BORDER, 14))
+	button.pressed.connect(action)
+	return button
 
 func _render_settings() -> void:
 	page.add_child(_label("SYSTEM", 25, TEXT_MAIN, true))

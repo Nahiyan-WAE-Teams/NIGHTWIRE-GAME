@@ -14,6 +14,10 @@ SaveManager="*res://scripts/core/save_manager.gd"
 ContentManager="*res://scripts/core/content_manager.gd"
 EvidenceManager="*res://scripts/core/evidence_manager.gd"
 StoryManager="*res://scripts/core/story_manager.gd"
+SpyManager="*res://scripts/core/spy_manager.gd"
+PuzzleManager="*res://scripts/core/puzzle_manager.gd"
+NotificationManager="*res://scripts/core/notification_manager.gd"
+CallManager="*res://scripts/core/call_manager.gd"
 ChatManager="*res://scripts/core/chat_manager.gd"
 
 [display]

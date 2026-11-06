@@ -5,6 +5,12 @@ func _ready() -> void:
 
 func _run_checks() -> void:
 	var failures: int = 0
+	if get_node_or_null("/root/SpyManager") == null or get_node_or_null("/root/PuzzleManager") == null:
+		push_error("Runtime check failed: spy or puzzle manager autoload is missing.")
+		failures += 1
+	if get_node_or_null("/root/NotificationManager") == null or get_node_or_null("/root/CallManager") == null:
+		push_error("Runtime check failed: notification or call manager autoload is missing.")
+		failures += 1
 	if ContentManager.get_characters().size() != 20:
 		push_error("Runtime check failed: ContentManager did not load all 20 character slots.")
 		failures += 1

@@ -43,6 +43,14 @@ func get_current_node() -> Dictionary:
 func get_trust(character_id: String) -> int:
 	return int(trust.get(character_id, 0))
 
+func adjust_trust(character_id: String, amount: int) -> void:
+	trust[character_id] = get_trust(character_id) + amount
+	_persist()
+
+func set_flag(flag_id: String, value: Variant = true) -> void:
+	flags[flag_id] = value
+	_persist()
+
 func get_flags() -> Dictionary:
 	return flags.duplicate(true)
 
