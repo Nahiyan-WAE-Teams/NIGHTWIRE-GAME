@@ -20,6 +20,8 @@ var nav_buttons: Dictionary = {}
 var inbox_search: LineEdit
 var inbox_list: VBoxContainer
 var nav_popup: PopupMenu
+var brand_header: HBoxContainer
+var navigation_dock: PanelContainer
 var pattern_entry: Array[int] = []
 var pattern_feedback: String = "NO INPUT YET"
 var password_feedback: String = "AWAITING DECRYPTION"
@@ -51,27 +53,27 @@ func _build_shell() -> void:
 	var shell: VBoxContainer = VBoxContainer.new()
 	shell.add_theme_constant_override("separation", 8)
 	safe_margin.add_child(shell)
-	_add_brand_header(shell)
+	brand_header = _add_brand_header(shell)
 
 	page = VBoxContainer.new()
 	page.name = "ScreenContent"
 	page.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	page.add_theme_constant_override("separation", 14)
 	shell.add_child(page)
-	var dock: PanelContainer = PanelContainer.new()
-	dock.name = "NavigationDock"
-	dock.add_theme_stylebox_override("panel", _panel_style(Color("#101015"), Color("#30303B"), 22))
+	navigation_dock = PanelContainer.new()
+	navigation_dock.name = "NavigationDock"
+	navigation_dock.add_theme_stylebox_override("panel", _panel_style(Color("#101015"), Color("#30303B"), 22))
 	var dock_margin: MarginContainer = MarginContainer.new()
 	dock_margin.add_theme_constant_override("margin_left", 7)
 	dock_margin.add_theme_constant_override("margin_right", 7)
 	dock_margin.add_theme_constant_override("margin_top", 7)
 	dock_margin.add_theme_constant_override("margin_bottom", 7)
-	dock.add_child(dock_margin)
+	navigation_dock.add_child(dock_margin)
 	navigation = _build_navigation()
 	dock_margin.add_child(navigation)
-	shell.add_child(dock)
+	shell.add_child(navigation_dock)
 
-func _add_brand_header(parent: VBoxContainer) -> void:
+func _add_brand_header(parent: VBoxContainer) -> HBoxContainer:
 	var header: HBoxContainer = HBoxContainer.new()
 	header.custom_minimum_size.y = 34.0
 	header.add_theme_constant_override("separation", 8)
@@ -92,6 +94,7 @@ func _add_brand_header(parent: VBoxContainer) -> void:
 	hairline.color = Color("#25252E")
 	hairline.custom_minimum_size.y = 1
 	parent.add_child(hairline)
+	return header
 
 func _build_navigation() -> HBoxContainer:
 	var nav: HBoxContainer = HBoxContainer.new()
@@ -147,6 +150,10 @@ func _on_more_menu_selected(item_id: int) -> void:
 			_navigate("settings")
 
 func _render_screen() -> void:
+	var immersive_chat: bool = active_screen == "chat"
+	brand_header.visible = not immersive_chat
+	navigation_dock.visible = not immersive_chat
+	page.add_theme_constant_override("separation", 8 if immersive_chat else 14)
 	_update_navigation()
 	_clear_page()
 	match active_screen:
@@ -381,7 +388,7 @@ func _message_bubble(message: Dictionary) -> Control:
 	line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var bubble: PanelContainer = PanelContainer.new()
 	bubble.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	bubble.add_theme_stylebox_override("panel", _panel_style(Color("#17242A") if is_player else SURFACE_RAISED, ACCENT_CYAN if is_player else BORDER, 18))
+	bubble.add_theme_stylebox_override("panel", _panel_style(Color("#24343A") if is_player else Color("#1B1B22"), Color("#35464B") if is_player else Color("#292932"), 15))
 	var margin: MarginContainer = MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 16)
 	margin.add_theme_constant_override("margin_right", 16)
@@ -405,7 +412,8 @@ func _message_bubble(message: Dictionary) -> Control:
 			body_text = "VOICE NOTE  •  %0.1fs" % float(message.get("duration", 0.0))
 	var body: Label = _label(body_text, 17, TEXT_MAIN)
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	body.custom_minimum_size.x = 240
+	body.custom_minimum_size.x = 190
+	body.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	content.add_child(body)
 	if message_kind == "voice":
 		var waveform: HBoxContainer = HBoxContainer.new()
@@ -581,8 +589,8 @@ func _inspect_private_chat() -> void:
 	dialog.popup_centered(Vector2i(560, 360))
 
 func _render_evidence() -> void:
-	page.add_child(_label("EVIDENCE WALL", 25, TEXT_MAIN, true))
-	page.add_child(_label("EVERY CLUE IS A THREAD. PULL THE RIGHT ONE.", 12, TEXT_MUTED))
+	page.add_child(_label("Clues", 27, TEXT_MAIN, true))
+	page.add_child(_label("PHOTOS  ·  RECORDINGS  ·  FILES", 10, TEXT_MUTED, true))
 	var records: Array[Dictionary] = EvidenceManager.get_unlocked()
 	if records.is_empty():
 		page.add_child(_empty_panel("No evidence collected yet.\\nEpisode choices can unlock photos, files, recordings and clues here."))
@@ -607,25 +615,42 @@ func _show_evidence_detail(record: Dictionary) -> void:
 	dialog.popup_centered(Vector2i(560, 320))
 
 func _render_people() -> void:
-	page.add_child(_label("THE CONTACTS", 25, TEXT_MAIN, true))
-	page.add_child(_label("20 CHARACTER SLOTS  /  PROFILES ARE CONTENT-DRIVEN", 12, TEXT_MUTED))
+	page.add_child(_label("Contacts", 27, TEXT_MAIN, true))
+	page.add_child(_label("PEOPLE IN YOUR NETWORK", 10, TEXT_MUTED, true))
 	var scroll: ScrollContainer = ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	page.add_child(scroll)
 	var list: VBoxContainer = VBoxContainer.new()
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	list.add_theme_constant_override("separation", 10)
+	list.add_theme_constant_override("separation", 0)
 	scroll.add_child(list)
 	for profile: Dictionary in ContentManager.get_characters():
-		var card: PanelContainer = PanelContainer.new()
-		card.add_theme_stylebox_override("panel", _panel_style(SURFACE, BORDER, 16))
+		var profile_id: String = str(profile.get("id", ""))
+		var card: Button = Button.new()
+		card.custom_minimum_size.y = 76
+		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		card.text = ""
+		card.add_theme_stylebox_override("normal", StyleBoxEmpty.new())
+		card.add_theme_stylebox_override("hover", _panel_style(Color("#17171D"), Color("#292932"), 8))
+		card.pressed.connect(_open_chat.bind(profile_id))
 		var row: HBoxContainer = HBoxContainer.new()
+		row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		row.add_theme_constant_override("separation", 12)
+		var avatar: PanelContainer = PanelContainer.new()
+		avatar.custom_minimum_size = Vector2(50, 50)
+		avatar.add_theme_stylebox_override("panel", _panel_style(Color("#25252D"), Color("#3A3A46"), 25))
+		var initials: Label = _label(str(profile.get("name", "C")).substr(0, 1).to_upper(), 20, TEXT_MAIN, true)
+		initials.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		initials.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		avatar.add_child(initials)
+		row.add_child(avatar)
 		var info: VBoxContainer = VBoxContainer.new()
 		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		info.add_child(_label(str(profile.get("name", "Character")), 17, TEXT_MAIN, true))
-		info.add_child(_label(str(profile.get("role", "Unassigned role")), 13, TEXT_MUTED))
+		info.alignment = BoxContainer.ALIGNMENT_CENTER
+		info.add_child(_label(str(profile.get("name", "Character")), 16, TEXT_MAIN, true))
+		info.add_child(_label(str(profile.get("role", "Unassigned")), 12, TEXT_MUTED))
 		row.add_child(info)
-		row.add_child(_label(str(profile.get("status", "inactive")).to_upper(), 11, ACCENT_CYAN))
+		row.add_child(_label("›", 24, TEXT_MUTED))
 		card.add_child(row)
 		list.add_child(card)
 
