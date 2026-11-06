@@ -328,8 +328,8 @@ func _open_image_viewer(media_path: String) -> void:
 		return
 	var window: Window = Window.new()
 	window.title = "NIGHTWIRE  /  IMAGE EVIDENCE"
-	window.size = Vector2i(900, 1100)
-	window.min_size = Vector2i(420, 560)
+	window.size = Vector2i(440, 760)
+	window.min_size = Vector2i(360, 560)
 	window.transient = true
 	window.exclusive = true
 	add_child(window)
@@ -380,14 +380,14 @@ func _open_document_viewer(media_path: String) -> void:
 	var dialog: AcceptDialog = AcceptDialog.new()
 	dialog.title = "NIGHTWIRE  /  DOCUMENT"
 	var preview: RichTextLabel = RichTextLabel.new()
-	preview.custom_minimum_size = Vector2(680, 560)
+	preview.custom_minimum_size = Vector2(360, 520)
 	preview.bbcode_enabled = false
 	preview.text = content_text
 	preview.fit_content = false
 	dialog.add_child(preview)
 	add_child(dialog)
 	dialog.confirmed.connect(dialog.queue_free)
-	dialog.popup_centered(Vector2i(760, 720))
+	dialog.popup_centered(Vector2i(420, 700))
 
 func _show_media_error(title_text: String, detail: String) -> void:
 	var dialog: AcceptDialog = AcceptDialog.new()
@@ -402,8 +402,8 @@ func _open_simulated_call() -> void:
 		return
 	var window: Window = Window.new()
 	window.title = "NIGHTWIRE  /  ENCRYPTED VOICE LINK"
-	window.size = Vector2i(760, 1040)
-	window.min_size = Vector2i(420, 680)
+	window.size = Vector2i(440, 760)
+	window.min_size = Vector2i(360, 560)
 	window.transient = true
 	window.exclusive = true
 	add_child(window)

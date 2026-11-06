@@ -14,7 +14,7 @@ var pin_buttons: Array[Button] = []
 var selected_id: String = ""
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(900.0, 900.0)
+	custom_minimum_size = Vector2(440.0, 900.0)
 	load_location_data(DATA_PATH)
 	_build_pins()
 	resized.connect(_layout_pins)
