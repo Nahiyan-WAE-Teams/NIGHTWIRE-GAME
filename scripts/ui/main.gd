@@ -413,7 +413,6 @@ func _message_bubble(message: Dictionary) -> Control:
 	line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var bubble: PanelContainer = PanelContainer.new()
 	bubble.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	bubble.custom_maximum_size.x = 350.0
 	var bubble_style: StyleBoxFlat = _panel_style(Color("#343B34") if is_player else Color("#242628"), Color("#343B34") if is_player else Color("#242628"), 14)
 	if is_player:
 		bubble_style.corner_radius_top_left = 14
@@ -451,7 +450,8 @@ func _message_bubble(message: Dictionary) -> Control:
 			body_text = "VOICE NOTE  •  %0.1fs" % float(message.get("duration", 0.0))
 	var body: Label = _label(body_text, 16, TEXT_MAIN)
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	body.custom_maximum_size.x = 320.0
+	body.custom_minimum_size.x = 180.0
+	body.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	content.add_child(body)
 
 	if message_kind == "voice":
