@@ -1,0 +1,39 @@
+; NIGHTWIRE - Godot 4.4
+; Offline-first, data-driven portrait thriller framework.
+
+config_version=5
+
+[application]
+config/name="NIGHTWIRE"
+config/description="Someone is always listening."
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.4", "Mobile")
+
+[autoload]
+SaveManager="*res://scripts/core/save_manager.gd"
+ContentManager="*res://scripts/core/content_manager.gd"
+EvidenceManager="*res://scripts/core/evidence_manager.gd"
+StoryManager="*res://scripts/core/story_manager.gd"
+SpyManager="*res://scripts/core/spy_manager.gd"
+PuzzleManager="*res://scripts/core/puzzle_manager.gd"
+NotificationManager="*res://scripts/core/notification_manager.gd"
+CallManager="*res://scripts/core/call_manager.gd"
+MediaManager="*res://scripts/core/media_manager.gd"
+HapticsManager="*res://scripts/core/haptics_manager.gd"
+ChatManager="*res://scripts/core/chat_manager.gd"
+
+[display]
+window/size/viewport_width=540
+window/size/viewport_height=1200
+window/size/window_width_override=540
+window/size/window_height_override=1200
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=1
+
+[rendering]
+renderer/rendering_method="mobile"
+renderer/rendering_method.mobile="mobile"
+environment/defaults/default_clear_color=Color(0.0313726, 0.0313726, 0.0392157, 1)
+textures/default_filters/use_nearest_mipmap_filter=false
+textures/vram_compression/import_etc2_astc=true

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "locations": [
+    {"id":"central_station","name":"CENTRAL STATION","type":"TRANSIT","description":"A major transit interchange. Add episode-specific details when your story is ready.","position":[0.50,0.18]},
+    {"id":"police_hq","name":"POLICE HQ","type":"PUBLIC SAFETY","description":"Local police headquarters. This location has no story events until an episode references it.","position":[0.22,0.40]},
+    {"id":"city_hospital","name":"CITY HOSPITAL","type":"MEDICAL","description":"A public hospital. Add story-specific access and events through episode content.","position":[0.76,0.40]},
+    {"id":"riverside_park","name":"RIVERSIDE PARK","type":"PUBLIC SPACE","description":"A riverside green space. Add story-specific details through your location data.","position":[0.50,0.58]},
+    {"id":"motel","name":"MOTEL","type":"LODGING","description":"A roadside motel. No plot events are assigned by default.","position":[0.18,0.78]},
+    {"id":"power_substation","name":"POWER SUBSTATION","type":"INFRASTRUCTURE","description":"A utility site. Episode content can use this location as a destination.","position":[0.80,0.78]}
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "id": "your_episode_id",
+  "title": "Your Episode Title",
+  "description": "Optional episode summary.",
+  "start_node": "opening",
+  "nodes": {
+    "opening": {
+      "speaker": "contact_01",
+      "text": "Write the first message here.",
+      "choices": [
+        {
+          "text": "Your choice text",
+          "next_id": "next_message",
+          "trust_changes": {
+            "contact_01": 1
+          },
+          "set_flags": {
+            "player_was_honest": true
+          },
+          "evidence": [],
+          "requires_trust": {},
+          "requires_flags": [],
+          "requires_evidence": []
+        }
+      ]
+    },
+    "next_message": {
+      "speaker": "contact_01",
+      "text": "Write the next message here.",
+      "choices": []
+    }
+  }
+}
