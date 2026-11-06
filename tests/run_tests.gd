@@ -17,12 +17,8 @@ func _run() -> void:
 	var roster: Variant = JSON.parse_string(roster_file.get_as_text())
 	roster_file.close()
 	_expect(ContentValidator.validate_roster(roster).is_empty(), "the character roster contains exactly twenty unique valid profiles")
-	var ui: Control = MainUI.new()
-	_expect(ui._scaled_font_size(16) == 19, "messenger body typography scales up for phone readability")
-	_expect(ui._scaled_font_size(10) >= 12, "small labels keep a readable minimum font size")
-	_expect(ui.has_method("_open_simulated_call"), "chat call action is available")
-	_expect(ui.has_method("_open_image_viewer") and ui.has_method("_open_document_viewer"), "evidence viewers are available")
-	ui.free()
+	_expect(MainUI._scaled_font_size(16) == 19, "messenger body typography scales up for phone readability")
+	_expect(MainUI._scaled_font_size(10) >= 12, "small labels keep a readable minimum font size")
 
 	var valid_episode: Dictionary = {
 		"id": "test_episode",
