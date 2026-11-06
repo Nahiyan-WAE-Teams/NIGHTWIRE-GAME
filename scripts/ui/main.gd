@@ -344,7 +344,7 @@ func _render_evidence() -> void:
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	page.add_child(scroll)
-	var board: Control = load("res://scripts/ui/evidence_board.gd").new()
+	var board: Variant = load("res://scripts/ui/evidence_board.gd").new()
 	board.records = records
 	board.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(board)
@@ -502,7 +502,7 @@ func _render_hack() -> void:
 	password_panel.add_child(password_box)
 	page.add_child(password_panel)
 
-	var reconstruction: VBoxContainer = load("res://scripts/ui/image_reconstruction.gd").new()
+	var reconstruction: Variant = load("res://scripts/ui/image_reconstruction.gd").new()
 	reconstruction.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	reconstruction.order_verified.connect(_on_image_reconstruction_solved)
 	page.add_child(reconstruction)

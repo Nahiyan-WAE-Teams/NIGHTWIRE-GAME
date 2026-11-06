@@ -18,7 +18,7 @@ func _run_checks() -> void:
 	_expect(not PuzzleManager.validate_pattern([2, 4, 1, 3], [2, 3, 4, 1]), "pattern puzzle rejects an incorrect sequence")
 	_expect(PuzzleManager.validate_anagram("NIGHT", "htgin"), "password puzzle accepts case-insensitive anagrams")
 	_expect(not PuzzleManager.validate_anagram("NIGHT", "nightwire"), "password puzzle rejects unrelated text")
-	var reconstruction: VBoxContainer = load("res://scripts/ui/image_reconstruction.gd").new()
+	var reconstruction: Variant = load("res://scripts/ui/image_reconstruction.gd").new()
 	_expect(not reconstruction.is_solved(), "image reconstruction starts in a scrambled state")
 	_expect(reconstruction.swap_positions(0, 1), "image reconstruction allows a valid tile swap")
 	_expect(not reconstruction.swap_positions(-1, 2), "image reconstruction rejects out-of-range tile swaps")
