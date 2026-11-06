@@ -75,6 +75,7 @@ func _build_navigation() -> HBoxContainer:
 	nav.add_child(_nav_button("CHATS", "inbox"))
 	nav.add_child(_nav_button("EVIDENCE", "evidence"))
 	nav.add_child(_nav_button("PEOPLE", "people"))
+	nav.add_child(_nav_button("MAP", "map"))
 	nav.add_child(_nav_button("STORY", "story"))
 	nav.add_child(_nav_button("HACK", "hack"))
 	nav.add_child(_nav_button("SETTINGS", "settings"))
@@ -106,6 +107,8 @@ func _render_screen() -> void:
 			_render_evidence()
 		"people":
 			_render_people()
+		"map":
+			_render_map()
 		"story":
 			_render_story()
 		"hack":
@@ -395,18 +398,47 @@ func _show_media_error(title_text: String, detail: String) -> void:
 func _open_simulated_call() -> void:
 	if not CallManager.begin_call(active_conversation_id):
 		return
-	var dialog: AcceptDialog = AcceptDialog.new()
-	dialog.title = "NIGHTWIRE  /  VOICE LINK"
-	dialog.dialog_text = "SIMULATED CALL ACTIVE\\n\\nThe call channel is ready. Camera and microphone streaming are not enabled in this offline build."
-	add_child(dialog)
-	dialog.confirmed.connect(_end_simulated_call.bind(dialog))
-	dialog.close_requested.connect(_end_simulated_call.bind(dialog))
-	dialog.popup_centered(Vector2i(560, 360))
+	var window: Window = Window.new()
+	window.title = "NIGHTWIRE  /  ENCRYPTED VOICE LINK"
+	window.size = Vector2i(760, 1040)
+	window.min_size = Vector2i(420, 680)
+	window.transient = true
+	window.exclusive = true
+	add_child(window)
+	var layout: VBoxContainer = VBoxContainer.new()
+	layout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	layout.add_theme_constant_override("separation", 14)
+	window.add_child(layout)
+	var identity: VBoxContainer = VBoxContainer.new()
+	identity.add_child(_label("INCOMING CHANNEL", 12, ACCENT_RED, true))
+	identity.add_child(_label(str(ChatManager.get_conversation(active_conversation_id).get("name", "UNKNOWN")), 25, TEXT_MAIN, true))
+	identity.add_child(_label("ENCRYPTED LINK  /  VIDEO STREAM NOT CONNECTED", 11, TEXT_MUTED))
+	layout.add_child(identity)
+	var visual: Control = load("res://scripts/ui/call_visual.gd").new()
+	visual.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	layout.add_child(visual)
+	var status: Label = _label("SIGNAL STABLE  •  LOCAL SIMULATION", 12, ACCENT_CYAN, true)
+	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	layout.add_child(status)
+	var controls: HBoxContainer = HBoxContainer.new()
+	var mute_button: Button = _action_button("MUTE MIC", func() -> void:
+		CallManager.set_muted(not CallManager.muted)
+		mute_button.text = "UNMUTE MIC" if CallManager.muted else "MUTE MIC"
+	)
+	controls.add_child(mute_button)
+	var end_button: Button = _action_button("END CALL", func() -> void:
+		_end_call_window(window)
+	)
+	end_button.add_theme_color_override("font_color", ACCENT_RED)
+	controls.add_child(end_button)
+	layout.add_child(controls)
+	window.close_requested.connect(_end_call_window.bind(window))
+	window.popup_centered()
 
-func _end_simulated_call(dialog: AcceptDialog) -> void:
+func _end_call_window(window: Window) -> void:
 	CallManager.end_call()
-	if is_instance_valid(dialog):
-		dialog.queue_free()
+	if is_instance_valid(window):
+		window.queue_free()
 
 func _inspect_private_chat() -> void:
 	var result: Dictionary = SpyManager.inspect_private_messages(active_conversation_id)
@@ -473,6 +505,26 @@ func _render_people() -> void:
 		card.add_child(row)
 		list.add_child(card)
 
+
+func _render_map() -> void:
+	page.add_child(_label("CITY GRID", 25, TEXT_MAIN, true))
+	page.add_child(_label("LOCATION DATA IS EDITABLE  /  EPISODES CAN REFERENCE THESE IDS", 11, TEXT_MUTED))
+	var scroll: ScrollContainer = ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	page.add_child(scroll)
+	var town_map: Control = load("res://scripts/ui/town_map.gd").new()
+	town_map.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(town_map)
+	town_map.location_selected.connect(_show_map_location)
+
+func _show_map_location(location: Dictionary) -> void:
+	var dialog: AcceptDialog = AcceptDialog.new()
+	dialog.title = str(location.get("name", "LOCATION"))
+	dialog.dialog_text = str(location.get("type", "LOCATION")) + "\\n\\n" + str(location.get("description", "No details available."))
+	add_child(dialog)
+	dialog.confirmed.connect(dialog.queue_free)
+	dialog.popup_centered(Vector2i(560, 320))
 
 func _render_story() -> void:
 	page.add_child(_label("STORY FILES", 25, TEXT_MAIN, true))

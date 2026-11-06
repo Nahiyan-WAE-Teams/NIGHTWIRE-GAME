@@ -11,6 +11,12 @@ func _run_checks() -> void:
 	if get_node_or_null("/root/NotificationManager") == null or get_node_or_null("/root/CallManager") == null or get_node_or_null("/root/MediaManager") == null:
 		_fail("notification and call managers are registered as autoloads")
 	_expect(not MediaManager.play_voice_note("res://missing_voice.ogg"), "missing voice-note assets fail safely")
+	var map_instance: Variant = load("res://scripts/ui/town_map.gd").new()
+	_expect(map_instance.load_location_data("res://data/world/locations.json"), "town map loads its editable location data")
+	_expect(map_instance.get_locations().size() == 6, "town map exposes six editable locations")
+	_expect(map_instance.select_location("central_station"), "town map can select a location by stable ID")
+	_expect(not map_instance.select_location("missing_location"), "town map rejects unknown location IDs")
+	map_instance.free()
 	_expect(MediaManager.load_image("res://missing_image.png") == null, "missing image assets fail safely")
 	_expect(ContentManager.get_characters().size() == 20, "all twenty character slots load")
 	_expect(ChatManager.get_conversations().size() == 20, "all twenty characters receive an inbox channel")
